@@ -1,0 +1,26 @@
+[project]
+name = "fitkit"
+version = "0.1.0"
+description = "Garment size prediction: deterministic fit engine with explicit measurement uncertainty."
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "hypothesis>=6",
+  # import-linter earns its place from Phase 4, when a second package exists
+  # for the layer contract to constrain. Declared now so the dev env is stable.
+  "import-linter>=2",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"

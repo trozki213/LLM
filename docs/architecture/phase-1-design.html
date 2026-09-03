@@ -1,0 +1,920 @@
+
+<title>Garment Fit Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F3F5F7; --surface:#FFFFFF; --surface-2:#E9EDF0; --sunken:#EDF1F3;
+  --ink:#141A1F; --ink-2:#38434C; --muted:#65727D; --line:#D3DAE0; --line-soft:#E3E8EC;
+  --accent:#1B5E86; --accent-soft:#E0EBF3;
+  --flag:#A03528; --flag-soft:#F7E6E3;
+  --ok:#2A6449; --ok-soft:#E1EEE7;
+  --sans:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --measure:68ch;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D1216; --surface:#141A20; --surface-2:#1B242B; --sunken:#101820;
+    --ink:#E3E9ED; --ink-2:#BAC4CC; --muted:#8493A0; --line:#28323A; --line-soft:#1F2830;
+    --accent:#7DB8DE; --accent-soft:#14303F;
+    --flag:#E08A7B; --flag-soft:#331E1A;
+    --ok:#7CBD9A; --ok-soft:#152C22;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D1216; --surface:#141A20; --surface-2:#1B242B; --sunken:#101820;
+  --ink:#E3E9ED; --ink-2:#BAC4CC; --muted:#8493A0; --line:#28323A; --line-soft:#1F2830;
+  --accent:#7DB8DE; --accent-soft:#14303F;
+  --flag:#E08A7B; --flag-soft:#331E1A;
+  --ok:#7CBD9A; --ok-soft:#152C22;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--serif); font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.page{max-width:1280px;margin:0 auto;padding:0 clamp(16px,4vw,48px) 96px}
+
+/* ---- masthead ---- */
+.mast{padding:clamp(40px,7vw,84px) 0 0}
+.eyebrow{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); margin:0 0 18px;
+}
+.mast h1{
+  font-family:var(--sans); font-weight:700; letter-spacing:-.024em; text-wrap:balance;
+  font-size:clamp(34px,5.4vw,58px); line-height:1.04; margin:0; max-width:16ch;
+}
+.dek{font-size:19px;color:var(--ink-2);max-width:60ch;margin:20px 0 0}
+.meta{
+  display:flex; flex-wrap:wrap; gap:0; margin:34px 0 0;
+  border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+}
+.meta div{
+  flex:1 1 190px; padding:14px 18px 15px; border-right:1px solid var(--line-soft);
+}
+.meta div:last-child{border-right:0}
+.meta dt{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); margin:0 0 5px;
+}
+.meta dd{margin:0;font-family:var(--sans);font-weight:600;font-size:14.5px;line-height:1.35;color:var(--ink)}
+.meta dd.is-flag{color:var(--flag)}
+
+/* tape-rule divider */
+hr.rule{
+  border:0; height:11px; margin:64px 0 0; background:
+    repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px 9px);
+  border-bottom:1px solid var(--line);
+}
+
+/* ---- layout ---- */
+.shell{display:block;margin-top:8px}
+@media (min-width:1080px){
+  .shell{display:grid;grid-template-columns:232px minmax(0,1fr);gap:64px;align-items:start}
+}
+nav.toc{display:none}
+@media (min-width:1080px){
+  nav.toc{
+    display:block; position:sticky; top:24px; max-height:calc(100vh - 48px); overflow-y:auto;
+    padding:26px 0 20px; font-family:var(--sans); font-size:12.5px; line-height:1.4;
+  }
+  nav.toc .toc-head{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;
+  }
+  nav.toc a{
+    display:block; text-decoration:none; color:var(--muted); padding:4px 0 4px 12px;
+    border-left:2px solid var(--line-soft); transition:color .12s,border-color .12s;
+  }
+  nav.toc a.toc-l3{padding-left:24px;font-size:12px}
+  nav.toc a:hover{color:var(--ink)}
+  nav.toc a.active{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+}
+
+/* ---- prose ---- */
+article{min-width:0}
+article > p, article > ul, article > ol, article > h3, article > h4{max-width:var(--measure)}
+h2{
+  font-family:var(--sans); font-weight:700; letter-spacing:-.018em; text-wrap:balance;
+  font-size:clamp(25px,3vw,33px); line-height:1.14; margin:34px 0 22px; max-width:22ch;
+}
+h3{
+  font-family:var(--sans); font-weight:600; letter-spacing:-.01em; text-wrap:balance;
+  font-size:20px; line-height:1.25; margin:44px 0 14px; color:var(--ink);
+}
+h4{
+  font-family:var(--mono); font-weight:500; font-size:12.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--accent); margin:34px 0 12px;
+}
+p{margin:0 0 17px}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic}
+ul,ol{margin:0 0 19px;padding-left:1.35em}
+li{margin:0 0 9px}
+li::marker{color:var(--muted)}
+ol{list-style:decimal}
+a{color:var(--accent)}
+code{
+  font-family:var(--mono); font-size:.855em; background:var(--surface-2);
+  padding:.12em .34em; border-radius:3px; color:var(--ink-2);
+  overflow-wrap:break-word;
+}
+.codewrap{
+  margin:0 0 22px; background:var(--sunken); border:1px solid var(--line-soft);
+  border-left:3px solid var(--accent); border-radius:2px; overflow-x:auto;
+}
+pre{margin:0;padding:16px 18px}
+pre code{
+  background:none; padding:0; border-radius:0; color:var(--ink-2);
+  font-size:12.5px; line-height:1.55; white-space:pre; display:block;
+}
+
+/* ---- tables ---- */
+.tablewrap{
+  margin:4px 0 26px; overflow-x:auto; border:1px solid var(--line);
+  background:var(--surface); border-radius:2px;
+}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:13.5px;line-height:1.45}
+th{
+  text-align:left; font-weight:600; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); padding:11px 14px; border-bottom:1px solid var(--line);
+  background:var(--surface-2); white-space:nowrap; vertical-align:bottom;
+}
+td{
+  padding:12px 14px; border-bottom:1px solid var(--line-soft); vertical-align:top;
+  color:var(--ink-2); font-variant-numeric:tabular-nums;
+}
+tbody tr:last-child td{border-bottom:0}
+td strong{color:var(--ink)}
+
+/* ---- chips & tags ---- */
+.chip{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.09em; text-transform:uppercase;
+  padding:.18em .45em .22em; border-radius:2px; white-space:nowrap;
+  vertical-align:.1em; margin:0 .1em; font-weight:500;
+}
+.chip-v{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok)}
+.chip-c{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.chip-u{background:var(--flag-soft);color:var(--flag);border:1px solid var(--flag)}
+.chip-note{font-family:var(--sans);font-size:11.5px;color:var(--muted);margin-left:.35em}
+.tag{
+  display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.09em;
+  text-transform:uppercase; padding:.24em .5em; border-radius:2px; font-weight:500;
+}
+.tag-flag{background:var(--flag-soft);color:var(--flag);border:1px solid var(--flag)}
+.tag-ok{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok)}
+
+/* ---- key ---- */
+.key{
+  display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;
+  padding:13px 16px;margin:26px 0 0;background:var(--surface);
+  border:1px solid var(--line);border-radius:2px;font-size:13px;
+  font-family:var(--sans);color:var(--muted);max-width:var(--measure);
+}
+.key b{font-weight:500;color:var(--ink-2)}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+html{scroll-padding-top:20px}
+footer{
+  margin-top:72px;padding-top:20px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+}
+</style>
+
+<div class="page">
+<header class="mast">
+  <p class="eyebrow">Design phase · awaiting approval</p>
+  <h1>Garment Fit Architecture</h1>
+  <p class="dek">How a shopper's two photographs become a size recommendation — and the
+  structural reasons the language model can never be the thing that picks it.</p>
+  <dl class="meta">
+    <div><dt>Recommendation</dt><dd>Commercial backend behind a port; permissive open stack in parallel</dd></div>
+    <div><dt>Blocking findings</dt><dd class="is-flag">3 licensing · SMPL, BodyM, provenance</dd></div>
+    <div><dt>Plan</dt><dd>8 phases · 12 ADRs · 12 open questions</dd></div>
+    <div><dt>Status</dt><dd>No production code written · 2026-09-03</dd></div>
+  </dl>
+  <p class="key"><b>Evidence key</b>
+    <span><span class="chip chip-v">verified</span> read from the primary source in session</span>
+    <span><span class="chip chip-c">vendor&#8209;claimed</span> marketing, not reproduced</span>
+    <span><span class="chip chip-u">unverified</span> could not confirm</span>
+  </p>
+</header>
+<div class="shell">
+<nav class="toc" aria-label="Contents">
+  <p class="toc-head">Contents</p>
+  <a class="toc-l2" href="#0-executive-summary">0. Executive summary</a>
+<a class="toc-l2" href="#1-measurement-backend-selection">1. Measurement backend selection</a>
+<a class="toc-l3" href="#1-1-evidence-standard-used-here">1.1 Evidence standard used here</a>
+<a class="toc-l3" href="#1-2-published-accuracy-against-ground-truth">1.2 Published accuracy against ground truth</a>
+<a class="toc-l3" href="#1-3-licensing-chain-blocking-findings">1.3 Licensing chain — blocking findings</a>
+<a class="toc-l3" href="#1-4-candidate-comparison">1.4 Candidate comparison</a>
+<a class="toc-l3" href="#1-5-recommendation-and-rationale">1.5 Recommendation and rationale</a>
+<a class="toc-l3" href="#1-6-what-i-could-not-verify">1.6 What I could not verify</a>
+<a class="toc-l2" href="#2-system-architecture">2. System architecture</a>
+<a class="toc-l3" href="#2-1-module-map-and-dependency-direction">2.1 Module map and dependency direction</a>
+<a class="toc-l3" href="#2-2-the-uncertainty-type-how-c6-is-made-structural">2.2 The uncertainty type — how C6 is made structural</a>
+<a class="toc-l3" href="#2-3-correlated-error-why-per-region-sigma-is-not-enough">2.3 Correlated error — why per-region sigma is not enough</a>
+<a class="toc-l2" href="#3-the-fit-engine-explanation-contract">3. The fit-engine → explanation contract</a>
+<a class="toc-l3" href="#3-1-shape">3.1 Shape</a>
+<a class="toc-l3" href="#3-2-rules-that-make-c1-and-c2-enforceable-rather-than-aspirational">3.2 Rules that make C1 and C2 enforceable rather than aspirational</a>
+<a class="toc-l3" href="#3-3-versioning">3.3 Versioning</a>
+<a class="toc-l2" href="#4-error-taxonomy-and-failure-propagation">4. Error taxonomy and failure propagation</a>
+<a class="toc-l3" href="#4-1-degradation-ladder">4.1 Degradation ladder</a>
+<a class="toc-l2" href="#5-observability">5. Observability</a>
+<a class="toc-l2" href="#6-phased-implementation-plan">6. Phased implementation plan</a>
+<a class="toc-l3" href="#phase-0-domain-kernel-fitkit-domain">Phase 0 — Domain kernel (fitkit.domain)</a>
+<a class="toc-l3" href="#phase-4-built-2nd-deterministic-fit-engine-fitkit-fit-engine">Phase 4 (built 2nd) — Deterministic fit engine (fitkit.fit_engine)</a>
+<a class="toc-l3" href="#phase-3-built-3rd-garment-catalog-fitkit-catalog">Phase 3 (built 3rd) — Garment catalog (fitkit.catalog)</a>
+<a class="toc-l3" href="#phase-5-built-4th-explanation-layer-fitkit-explanation">Phase 5 (built 4th) — Explanation layer (fitkit.explanation)</a>
+<a class="toc-l3" href="#phase-1-built-5th-acquisition-and-capture-quality-gating-fitkit-acquisition">Phase 1 (built 5th) — Acquisition and capture-quality gating (fitkit.acquisition)</a>
+<a class="toc-l3" href="#phase-2-built-6th-measurement-estimation-fitkit-measurement">Phase 2 (built 6th) — Measurement estimation (fitkit.measurement)</a>
+<a class="toc-l3" href="#phase-6-built-7th-orchestration-and-public-api-fitkit-orchestration">Phase 6 (built 7th) — Orchestration and public API (fitkit.orchestration)</a>
+<a class="toc-l3" href="#phase-7-built-8th-offline-evaluation-harness-fitkit-evaluation">Phase 7 (built 8th) — Offline evaluation harness (fitkit.evaluation)</a>
+<a class="toc-l2" href="#7-where-i-think-you-are-wrong-or-at-least-incomplete">7. Where I think you are wrong, or at least incomplete</a>
+<a class="toc-l3" href="#7-1-the-primary-failure-mode-is-probably-garment-data-not-body-measurement">7.1 The primary failure mode is probably garment data, not body measurement</a>
+<a class="toc-l3" href="#7-2-c1-protects-the-arithmetic-but-not-the-rhetoric">7.2 C1 protects the arithmetic but not the rhetoric</a>
+<a class="toc-l3" href="#7-3-the-llm-may-not-earn-its-place-at-launch">7.3 The LLM may not earn its place at launch</a>
+<a class="toc-l3" href="#7-4-declared-height-is-a-first-class-input-and-a-first-class-error-source">7.4 Declared height is a first-class input *and* a first-class error source</a>
+<a class="toc-l3" href="#7-5-weight-is-worth-more-than-height-and-you-have-not-asked-for-it">7.5 Weight is worth more than height, and you have not asked for it</a>
+<a class="toc-l2" href="#8-architecture-decision-records">8. Architecture Decision Records</a>
+<a class="toc-l2" href="#9-open-questions">9. Open questions</a>
+<a class="toc-l2" href="#10-what-phase-2-would-begin-with">10. What Phase 2 would begin with</a>
+</nav>
+<article>
+<h2 id="0-executive-summary">0. Executive summary</h2>
+<p>Three findings drive everything below.</p>
+<p><strong>Finding 1 — the licensing chain kills the obvious technical answer.</strong> The best-published measurement research in this field is built on the SMPL family of body models and on the BodyM dataset. Both are non-commercial. The SMPL licence additionally forbids using the software <em>to train</em> networks for commercial use, which makes the encumbrance transitive: "open" checkpoints trained against SMPL data are not automatically safe. Verified details in §1.3.</p>
+<p><strong>Finding 2 — capture protocol beats model choice, and it is measurable.</strong> On Amazon's BodyM benchmark, the same network moves from 31.93 mm waist MAE (single frontal view) to 18.71 mm (frontal + lateral + declared height) to 15.44 mm (+ weight). Meanwhile general-purpose human-mesh-recovery methods evaluated on the same task produce waist errors of 53–108 mm. The rigid capture protocol you already specified is worth more than any backend swap, and <em>weight</em> is worth more than height. Verified numbers in §1.2.</p>
+<p><strong>Finding 3 — the error budget is tighter than the size step, so abstention is not optional.</strong> Best realistic in-the-wild waist error is ~2 cm (1σ). A typical inter-size step is ~4 cm. A 2 cm measurement error against a 4 cm step means a substantial fraction of shoppers sit genuinely between sizes, and no amount of engineering removes that. Your C6 is correct and this design makes uncertainty a type-level obligation rather than a policy.</p>
+<p>I also want to register one disagreement with the framing, argued in §7: <strong>body measurement error is probably not the primary failure mode — garment specification error is.</strong> Manufacturing grading tolerance on a single size is frequently of the same order as our measurement error, and unlike our error it is invisible to us. The design therefore puts uncertainty on garment measurements too, not just body measurements.</p>
+<p><strong>Recommendation:</strong> integrate a commercial measurement vendor behind the <code>MeasurementBackend</code> port for launch, build the evaluation harness <em>before</em> trusting it, and run a commercially-licensed in-house track (Anny + MHR, both permissive) as the planned replacement. Detail in §1.4.</p>
+<hr class="rule" />
+<h2 id="1-measurement-backend-selection">1. Measurement backend selection</h2>
+<h3 id="1-1-evidence-standard-used-here">1.1 Evidence standard used here</h3>
+<p>Everything marked <strong><span class="chip chip-v">verified</span></strong> was read from the primary source during this session (paper PDF, licence text, or repository file) and the numbers are quoted as published. Everything marked <strong><span class="chip chip-c">vendor&#8209;claimed</span></strong> comes from marketing material and has not been independently reproduced. Everything marked <strong><span class="chip chip-u">unverified</span></strong> I could not confirm and you should not treat as fact. I have invented nothing.</p>
+<h3 id="1-2-published-accuracy-against-ground-truth">1.2 Published accuracy against ground truth</h3>
+<p><strong>Amazon BMnet / BodyM</strong> (Ruiz et al., <em>Human Body Measurement Estimation with Adversarial Augmentation</em>, arXiv:2210.05667). Ground truth is 3D body scans of 2,505 real subjects with 14 tape-equivalent measurements. Test-A is lab-photographed; Test-B is photographed in a less-controlled environment to simulate in-the-wild capture. <strong><span class="chip chip-v">verified</span></strong></p>
+<p>Table 2 — input ablation, errors in mm, BodyM Test-A:</p>
+<div class="tablewrap"><table><thead><tr><th>Inputs</th><th>Chest MAE</th><th>Hip MAE</th><th>Waist MAE</th></tr></thead><tbody><tr><td>Single view</td><td>33.95</td><td>31.03</td><td>31.93</td></tr><tr><td>Multi-view (frontal + lateral)</td><td>28.66</td><td>28.29</td><td>27.32</td></tr><tr><td>Multi-view + height</td><td>19.38</td><td>15.97</td><td>18.71</td></tr><tr><td>Multi-view + weight</td><td>15.22</td><td>10.54</td><td>13.69</td></tr><tr><td>Multi-view + height + weight</td><td>15.92</td><td>9.74</td><td>15.44</td></tr></tbody></table></div>
+<p>Table 7 — the same benchmark, comparing general human-mesh-recovery methods (single view, no metadata), errors in mm:</p>
+<div class="tablewrap"><table><thead><tr><th>Method</th><th>Chest MAE</th><th>Hip MAE</th><th>Waist MAE</th></tr></thead><tbody><tr><td>SPIN</td><td>74.45</td><td>65.41</td><td>77.39</td></tr><tr><td>STRAPS</td><td>82.30</td><td>63.96</td><td>108.00</td></tr><tr><td>Sengupta et al.</td><td>53.07</td><td>47.43</td><td>53.20</td></tr><tr><td>BMnet (single view, no metadata)</td><td>33.95</td><td>31.03</td><td>31.93</td></tr></tbody></table></div>
+<p>Table 8 — Test-B (in-the-wild capture conditions), minimal-clothing subset, single view: chest 22.67 mm, hip 16.41 mm, leg length 13.58 mm, waist 20.78 mm.</p>
+<p>Table 9 — Test-A per-measurement, full training set: chest 18.84, hip 11.34, waist 15.78, mean over 14 measurements 9.19 mm.</p>
+<p><strong>SHAPY</strong> (Choutas et al., CVPR 2022, arXiv:2206.07036), evaluated on the authors' HBW dataset — 35 subjects with 3D-scan ground truth, in-the-wild photos. Table 3, MAE in mm: <strong><span class="chip chip-v">verified</span></strong></p>
+<div class="tablewrap"><table><thead><tr><th>Method</th><th>Height</th><th>Chest</th><th>Waist</th><th>Hips</th></tr></thead><tbody><tr><td>SMPLR</td><td>182</td><td>267</td><td>309</td><td>305</td></tr><tr><td>STRAPS</td><td>135</td><td>167</td><td>145</td><td>102</td></tr><tr><td>SPIN</td><td>59</td><td>92</td><td>78</td><td>101</td></tr><tr><td>TUCH</td><td>58</td><td>89</td><td>75</td><td>57</td></tr><tr><td>Sengupta et al.</td><td>82</td><td>133</td><td>107</td><td>63</td></tr><tr><td>ExPose</td><td>85</td><td>99</td><td>92</td><td>94</td></tr><tr><td><strong>SHAPY</strong></td><td><strong>51</strong></td><td><strong>65</strong></td><td><strong>69</strong></td><td><strong>57</strong></td></tr></tbody></table></div>
+<p>SHAPY is the best of that set and its waist error is still 6.9 cm. On the MMTS set (Table 4) SHAPY reports height 71, chest 64, waist 98, hips 74 mm.</p>
+<p><strong>Read this comparison carefully.</strong> The two families are not measuring the same thing. HBW is unconstrained single-image capture; BodyM Test-A is a rigid protocol with a declared height. The 4–5x gap between them is the value of the protocol, not the value of the network. That is the single most actionable fact in this document.</p>
+<h3 id="1-3-licensing-chain-blocking-findings">1.3 Licensing chain — blocking findings</h3>
+<div class="tablewrap"><table><thead><tr><th>Asset</th><th>Licence</th><th>Commercial use</th><th>Status</th></tr></thead><tbody><tr><td>SMPL / SMPL-H / SMPL-X / STAR / SUPR</td><td>MPG research licence</td><td><strong>No.</strong> Commercial sub-licence only via Meshcapade</td><td><span class="tag tag-flag">blocking</span></td></tr><tr><td>SMPL licence, training clause</td><td>—</td><td>Prohibits using the software to train networks for commercial use of any kind</td><td><span class="tag tag-flag">blocking · transitive</span></td></tr><tr><td>BodyM dataset</td><td>CC BY-NC 4.0</td><td><strong>No</strong></td><td><span class="tag tag-flag">blocking</span></td></tr><tr><td>Anny body model + code (NAVER)</td><td>Apache 2.0</td><td>Yes</td><td>Clear</td></tr><tr><td>Meta MHR (<code>facebookresearch/MHR</code>)</td><td>Apache 2.0 <strong><span class="chip chip-u">unverified</span><span class="chip-note">README/search level, not read from the repo LICENSE</span></strong></td><td>Yes, if confirmed</td><td>Verify before committing</td></tr><tr><td>Meta SAM 3D Body</td><td>"SAM License" — grants use, reproduction, modification, derivative works, royalty-free; adds ITAR / trade-control / no-reverse-engineering restrictions <strong>[verified from the repo LICENSE]</strong></td><td>Yes, with an acceptable-use policy attached</td><td>Counsel review, not a blanket OSS grant</td></tr><tr><td>Commercial vendor APIs</td><td>Per contract</td><td>Yes</td><td>Contract + DPA</td></tr></tbody></table></div>
+<p>Sources: <code>smpl.is.tue.mpg.de/modellicense.html</code>, <code>smpl-x.is.tue.mpg.de/modellicense.html</code>, <code>awslabs/open-data-registry/datasets/bodym.yaml</code>, <code>arxiv.org/abs/2511.03589</code>, <code>github.com/facebookresearch/sam-3d-body/blob/main/LICENSE</code>.</p>
+<p>The transitive clause is the trap. A permissively-licensed <em>checkpoint</em> whose training pipeline used SMPL meshes, SMPL-derived synthetic data, or a CC BY-NC dataset may still be encumbered. <strong>Every candidate weight file must have its training-data provenance documented before it enters the build.</strong> This is a legal-diligence task, not an engineering one, and it belongs in Phase 2 planning as a hard gate.</p>
+<h3 id="1-4-candidate-comparison">1.4 Candidate comparison</h3>
+<div class="tablewrap"><table><thead><tr><th></th><th><strong>A. In-house silhouette regressor</strong> (BMnet architecture, own data)</th><th><strong>B. SHAPY / SMPL-X research stack</strong></th><th><strong>C. Permissive open stack</strong> (Anny + MHR / SAM 3D Body)</th><th><strong>D. Commercial vendor API</strong></th></tr></thead><tbody><tr><td>Accuracy vs tape</td><td>Waist 15–19 mm lab, 20.8 mm in-the-wild <strong><span class="chip chip-v">verified</span></strong></td><td>Waist 69–98 mm <strong><span class="chip chip-v">verified</span></strong></td><td><strong>No published evidence for anthropometry.</strong> Anny claims mm-accurate scan <em>fitting</em> and HMR parity — neither is tape accuracy <strong>[verified claim, wrong metric]</strong></td><td>1.5–2.2 cm <strong><span class="chip chip-c">vendor&#8209;claimed</span></strong>; one 2022 academic comparison reports bust/waist/shoulder discrepancies exceeding ANSUR allowable error <strong><span class="chip chip-u">unverified</span><span class="chip-note">secondary summary, paper not read in full</span></strong></td></tr><tr><td>Frontal + lateral</td><td>Native, and the second view is worth ~4.6 mm on waist <strong><span class="chip chip-v">verified</span></strong></td><td>Single image, no fusion</td><td>Single image; multi-view fusion is ours to build</td><td>Typically yes; matches our protocol</td></tr><tr><td>Scale calibration</td><td>Height is an explicit network input</td><td>None at inference</td><td>Fit a metric-scaled mesh; we own it</td><td>Height is a required field</td></tr><tr><td>Licensing</td><td>Architecture free; <strong>weights and data blocked</strong></td><td><strong>Blocked</strong></td><td>Clear (pending MHR verification)</td><td>Contractual; plus a GDPR data-processing problem — full-body photos leave our control</td></tr><tr><td>Maintenance</td><td>Paper 2022, no maintained implementation <strong><span class="chip chip-u">unverified</span></strong></td><td>Research repo, low activity <strong><span class="chip chip-u">unverified</span></strong></td><td>Active, released Nov 2025</td><td>Vendor SLA</td></tr><tr><td>Inference cost / latency</td><td>MNASNet-class backbone — cheap, tens of ms</td><td>GPU seconds</td><td>GPU seconds, self-hosted</td><td>Network round trip; <strong>per-scan price not public <span class="chip chip-u">unverified</span></strong></td></tr><tr><td>Integration effort</td><td>Very high — requires our own scanned + tape-measured dataset</td><td>Low to integrate, but unusable</td><td>High — we own measurement extraction, calibration and validation</td><td><strong>Low — days</strong></td></tr><tr><td>Verdict</td><td>Target architecture, blocked on data</td><td><span class="tag tag-flag">reject</span></td><td>In-house track</td><td><span class="tag tag-ok">launch choice</span></td></tr></tbody></table></div>
+<h3 id="1-5-recommendation-and-rationale">1.5 Recommendation and rationale</h3>
+<p><strong>Launch on D (commercial vendor) behind the <code>MeasurementBackend</code> port. Build C in parallel as the planned replacement. Reject B outright. Treat A as the destination if we ever fund our own scan panel.</strong></p>
+<p>Rationale, in order of weight:</p>
+<ol>
+<li><strong>The evaluation harness must exist before the backend is trusted, and it can only be built against a working end-to-end system.</strong> Nothing about size prediction is knowable until return outcomes flow back. A vendor gets us to that loop in days rather than quarters. We are buying measurement time, not measurement truth.</li>
+<li>**No candidate has published accuracy on <em>our</em> protocol with <em>our</em> population.** Vendor claims are unverified; the open stack has no anthropometric evidence at all. So the choice is not "which is most accurate" — it is "which lets us find out fastest, at acceptable switching cost". C5 makes the answer cheap to revise.</li>
+<li><strong>The open stack is the only path that is simultaneously commercially clean, cost- controlled at volume, and privacy-defensible</strong> (images never leave our infrastructure). That makes it the right destination, but it is a build, not an integration, and it must be validated against tape before it can be trusted with a shopper's money.</li>
+<li><strong>The vendor decision is reversible; the protocol decision is not.</strong> Capture protocol changes require re-onboarding users. So we should over-invest in Phase 1 (acquisition) and under-commit on Phase 2 (measurement).</li>
+</ol>
+<p>Consequences we accept: vendor per-scan cost at unknown unit economics; a DPA and probably an Article 9 biometric-data assessment; and a hard dependency on the vendor's uptime during launch, mitigated by the degradation ladder in §4.</p>
+<h3 id="1-6-what-i-could-not-verify">1.6 What I could not verify</h3>
+<ul>
+<li>Vendor per-scan pricing, latency SLAs, and whether any vendor will contractually commit to an accuracy figure. All are commercial questions for a procurement conversation.</li>
+<li>The 2022 academic comparison of mobile scanning apps — I have only a search-result summary of it. Do not cite it externally on my say-so.</li>
+<li>Meta MHR's repository LICENSE file. Search results say Apache 2.0; I did not read it.</li>
+<li>Whether BMnet's implementation was ever released.</li>
+</ul>
+<hr class="rule" />
+<h2 id="2-system-architecture">2. System architecture</h2>
+<h3 id="2-1-module-map-and-dependency-direction">2.1 Module map and dependency direction</h3>
+<div class="codewrap"><pre class="lang-text"><code>                        ┌───────────────────────────────┐
+                        │  domain  (pure, zero deps)    │
+                        │  Measure, BodyRegion,         │
+                        │  BodyMeasurements, GarmentSpec│
+                        │  FabricSpec, FitPolicy,       │
+                        │  errors, PORTS (Protocols)    │
+                        │  contracts/FitAssessment v1   │
+                        └───────────────────────────────┘
+                          ▲     ▲      ▲      ▲       ▲
+          ┌───────────────┘     │      │      │       └────────────────┐
+          │                     │      │      │                        │
+  ┌───────────────┐  ┌──────────────┐ │ ┌──────────────┐   ┌───────────────────┐
+  │ acquisition   │  │ measurement  │ │ │ catalog      │   │ explanation       │
+  │ (gates)       │  │ (backends,   │ │ │ (specs,      │   │ (renderers,       │
+  │               │  │  calibration)│ │ │  importers)  │   │  guards, LLM port)│
+  └───────────────┘  └──────────────┘ │ └──────────────┘   └───────────────────┘
+          ▲                  ▲        │        ▲                    ▲
+          │                  │  ┌─────────────┐│                    │
+          │                  │  │ fit_engine  ││                    │
+          │                  │  │ (pure)      ││                    │
+          │                  │  └─────────────┘│                    │
+          │                  │        ▲        │                    │
+          └──────────────────┴────────┴────────┴────────────────────┘
+                                      │
+                        ┌───────────────────────────────┐
+                        │ orchestration                 │
+                        │ (composition root, public API)│
+                        └───────────────────────────────┘
+                                      │  reads persisted contracts
+                        ┌───────────────────────────────┐
+                        │ evaluation (offline)          │
+                        └───────────────────────────────┘
+
+  infrastructure/  (vendor HTTP clients, S3/GCS photo store, Postgres,
+                    Anthropic client) — depends on domain ports only,
+                    and nothing depends on it except orchestration wiring.</code></pre></div>
+<p>Edges, stated as rules:</p>
+<ol>
+<li><code>domain</code> imports nothing from this project and no third-party runtime library. It is the only module allowed to define the vocabulary.</li>
+<li><code>fit_engine</code> imports <code>domain</code> only. No I/O, no clock, no randomness, no network.</li>
+<li><code>explanation</code> imports <code>domain.contracts</code> <strong>only</strong> — explicitly <em>not</em> <code>fit_engine</code>. This is the edge that enforces C1: the renderer physically cannot reach the arithmetic.</li>
+<li><code>acquisition</code>, <code>measurement</code>, <code>catalog</code> import <code>domain</code> and each other never.</li>
+<li><code>orchestration</code> is the only module that names concrete adapter classes.</li>
+<li><code>evaluation</code> reads persisted <code>FitAssessment</code> documents and ground-truth tables; it does not import adapters.</li>
+</ol>
+<p><strong>The graph is acyclic by construction</strong>: every arrow points at <code>domain</code> or at <code>orchestration</code>, and <code>orchestration</code> is imported by nothing. This is not an assertion to be trusted — it is checked in CI by <code>import-linter</code> with a layered contract, and a violating import fails the build. That is the acceptance criterion.</p>
+<h3 id="2-2-the-uncertainty-type-how-c6-is-made-structural">2.2 The uncertainty type — how C6 is made structural</h3>
+<div class="codewrap"><pre class="lang-python"><code>Cm = float  # documented alias; the invariant lives in Measure, not the alias
+
+class MeasureSource(StrEnum):
+    ESTIMATED = &quot;estimated&quot;        # from the measurement backend
+    USER_DECLARED = &quot;user_declared&quot;# self-reported height/weight
+    TAPE = &quot;tape&quot;                  # ground truth, evaluation only
+    SPEC_SHEET = &quot;spec_sheet&quot;      # garment tech pack
+    DERIVED = &quot;derived&quot;            # computed from other Measures
+
+@dataclass(frozen=True, slots=True)
+class Measure:
+    value_cm: float
+    sigma_cm: float                # 1-sigma. No default. Must be &gt; 0.
+    source: MeasureSource</code></pre></div>
+<p>Three rules make silent false precision impossible:</p>
+<ul>
+<li><strong>There is no bare centimetre float anywhere in the domain.</strong> Every length is a <code>Measure</code>. A function that wants to accept a number instead of a <code>Measure</code> cannot type- check.</li>
+<li><strong><code>sigma_cm</code> has no default and is validated <code>&gt; MIN_SIGMA_CM</code>.</strong> A backend that returns bare numbers cannot construct a <code>Measure</code> without someone deciding, in code, what its uncertainty is. The decision is forced into the open.</li>
+<li><strong>Arithmetic propagates.</strong> <code>Measure.__sub__</code> returns a <code>Measure</code> whose sigma is the combined sigma. You cannot subtract your way out of the error bars.</li>
+</ul>
+<h3 id="2-3-correlated-error-why-per-region-sigma-is-not-enough">2.3 Correlated error — why per-region sigma is not enough</h3>
+<p>Independent per-region sigmas are wrong here, and wrong in the direction that matters. If the shopper declares 175 cm and is 172 cm, <em>every</em> circumference is inflated by roughly the same proportion. Correlated error shifts all regions the same way, which is a size-shift; independent error smears them, which is a fit-quality question. Treating the first as the second will systematically under-abstain.</p>
+<p>The v1 model is two-component:</p>
+<div class="codewrap"><pre class="lang-text"><code>sigma_total(r)^2  =  (k_r * sigma_scale)^2  +  sigma_resid(r)^2</code></pre></div>
+<ul>
+<li><code>sigma_scale</code> — relative scale uncertainty from the calibration source. For declared height it is dominated by self-report error and rounding; <strong>its value must be measured on our validation panel, not assumed</strong> (see §7.4 and Phase 7).</li>
+<li><code>k_r</code> — the sensitivity of region <code>r</code> to scale, ~1.0 for circumferences and lengths.</li>
+<li><code>sigma_resid(r)</code> — independent residual, from the backend's measured residual distribution.</li>
+</ul>
+<div class="codewrap"><pre class="lang-python"><code>@dataclass(frozen=True)
+class BodyMeasurements:
+    values: Mapping[BodyRegion, Measure]
+    scale_sigma_rel: float          # the shared component
+    provenance: MeasurementProvenance</code></pre></div>
+<p>Full covariance is deferred and recorded as such in ADR-004.</p>
+<hr class="rule" />
+<h2 id="3-the-fit-engine-explanation-contract">3. The fit-engine → explanation contract</h2>
+<p>This is the most important artifact in the system, so it is specified before the phases that produce and consume it.</p>
+<h3 id="3-1-shape">3.1 Shape</h3>
+<p><code>FitAssessment</code>, JSON, schema id <code>fit-assessment/1.0.0</code>.</p>
+<div class="codewrap"><pre class="lang-jsonc"><code>{
+  &quot;schema_version&quot;: &quot;fit-assessment/1.0.0&quot;,
+  &quot;assessment_id&quot;: &quot;01J...&quot;,                  // ULID
+  &quot;garment&quot;: {
+    &quot;garment_id&quot;: &quot;brand:sku&quot;,
+    &quot;category&quot;: &quot;TROUSERS&quot;,                    // enum
+    &quot;size_system&quot;: &quot;EU&quot;,
+    &quot;fit_intent&quot;: &quot;REGULAR&quot;                    // designer&#x27;s ease intent, enum
+  },
+  &quot;fabric&quot;: {
+    &quot;stretch_class&quot;: &quot;LOW&quot;,                    // enum: NONE|LOW|MEDIUM|HIGH
+    &quot;recovery&quot;: &quot;GOOD&quot;,                        // enum: GOOD|POOR|UNKNOWN
+    &quot;usable_extension_pct&quot;: 6.0                // what the StretchModel actually allowed
+  },
+  &quot;recommendation&quot;: {
+    &quot;verdict&quot;: &quot;SINGLE&quot;,                       // SINGLE | TWO_SIZES | ABSTAIN
+    &quot;primary&quot;:   { &quot;size_label&quot;: &quot;48&quot;, &quot;confidence&quot;: 0.71 },
+    &quot;alternate&quot;: { &quot;size_label&quot;: &quot;50&quot;, &quot;confidence&quot;: 0.24 },   // or null
+    &quot;abstain&quot;: null                            // or { &quot;code&quot;: ..., &quot;detail_codes&quot;: [...] }
+  },
+  &quot;sizes&quot;: [
+    {
+      &quot;size_label&quot;: &quot;48&quot;,
+      &quot;confidence&quot;: 0.71,
+      &quot;regions&quot;: [
+        {
+          &quot;region&quot;: &quot;WAIST&quot;,
+          &quot;critical&quot;: true,
+          &quot;delta_cm&quot;: -2.0,                    // garment minus body, sign is explicit
+          &quot;delta_sigma_cm&quot;: 1.4,
+          &quot;stretch_absorbed_cm&quot;: 1.2,
+          &quot;required_ease_cm&quot;: { &quot;min&quot;: 1.0, &quot;preferred&quot;: 2.0, &quot;max&quot;: 5.0 },
+          &quot;classification&quot;: &quot;TIGHT&quot;,           // enum, closed vocabulary
+          &quot;uncertain&quot;: false
+        }
+      ],
+      &quot;coverage&quot;: &quot;COMPLETE&quot;,                  // COMPLETE | PARTIAL
+      &quot;missing_regions&quot;: []
+    }
+  ],
+  &quot;inputs_digest&quot;: {
+    &quot;measurement_backend&quot;: &quot;vendor-x@2026.07&quot;,
+    &quot;measurement_provenance_id&quot;: &quot;...&quot;,
+    &quot;garment_spec_version&quot;: &quot;brand:sku@7&quot;,
+    &quot;engine_version&quot;: &quot;fit-engine/1.4.2&quot;,
+    &quot;policy_version&quot;: &quot;policy/merchant-a/3&quot;,
+    &quot;computed_at&quot;: &quot;2026-09-03T11:04:22Z&quot;
+  },
+  &quot;render_hints&quot;: { &quot;locale&quot;: &quot;it-IT&quot;, &quot;tone&quot;: &quot;NEUTRAL&quot; }
+}</code></pre></div>
+<h3 id="3-2-rules-that-make-c1-and-c2-enforceable-rather-than-aspirational">3.2 Rules that make C1 and C2 enforceable rather than aspirational</h3>
+<p><strong>R1 — No free text from the engine.</strong> Every qualitative statement in the document is a value from a closed enum. The engine never emits a sentence.</p>
+<p><strong>R2 — Completeness.</strong> Every number a renderer may legitimately mention is present in the document. There is nothing to compute.</p>
+<p><strong>R3 — Isolation.</strong> <code>explanation</code> imports <code>domain.contracts</code> and nothing else from the project. Enforced by the import-linter contract, so a well-meaning future change that "just needs the garment spec" fails CI rather than review.</p>
+<p><strong>R4 — The numeric guard.</strong> After an LLM renders, every numeric literal in its output is extracted and checked against an allowlist derived from the document (values, and their roundings to the tolerances we publish). A number that is not in the allowlist fails the guard and the response falls back to the template renderer. <em>This is the teeth behind C1.</em> Without it, "the LLM never decides the size" is a hope about a prompt. With it, an LLM that invents "about 3 cm of room" cannot reach a shopper.</p>
+<p>I want to be blunt about R4's limit: it catches invented <em>numbers</em>. It does not catch invented <em>reassurance</em> — "should still be comfortable" on a −2 cm waist in rigid denim contains no numeral. That is why the document carries <code>classification</code> as a closed enum and why the guard also runs a banned-claim check against a controlled vocabulary keyed by <code>classification</code>. C1 as you wrote it protects the arithmetic; the rhetoric needs its own constraint, and I have added one.</p>
+<p><strong>R5 — Determinism is not available from the LLM, so do not design for it.</strong> Sampling parameters (<code>temperature</code>, <code>top_p</code>, <code>top_k</code>) are removed on the current Claude models and return a 400. There is no <code>temperature=0</code> to hide behind. Reproducibility therefore comes from the template renderer (which is exactly reproducible) plus the guard (which bounds what the LLM can say), never from asking the model to be deterministic.</p>
+<h3 id="3-3-versioning">3.3 Versioning</h3>
+<ul>
+<li>Semantic versioning on <code>schema_version</code>, mandatory on read.</li>
+<li><strong>Minor = additive optional fields only.</strong> Renderers must ignore unknown optional fields.</li>
+<li><strong>Major = anything else.</strong> Removing a field, narrowing an enum, changing a unit, or changing the sign convention of <code>delta_cm</code> are all major.</li>
+<li>Enums are extensible only in a major version; a renderer receiving an unknown enum value fails closed to the template renderer rather than guessing.</li>
+<li>Every renderer declares the range it supports. CI runs every renderer against a corpus of golden documents for every supported version — that matrix is the compatibility test.</li>
+<li>Persisted documents are never migrated in place. The evaluation harness reads historical versions, which is why old readers must keep working.</li>
+</ul>
+<hr class="rule" />
+<h2 id="4-error-taxonomy-and-failure-propagation">4. Error taxonomy and failure propagation</h2>
+<div class="codewrap"><pre class="lang-text"><code>FitKitError
+├── InputError                      → 4xx, user or caller can fix
+│   ├── CaptureRejected             → carries per-gate failures + remediation codes
+│   ├── InvalidDeclaredHeight
+│   ├── GarmentNotFound
+│   └── SizeSpecIncomplete          → the spec lacks a region we need
+├── DegradedResult                  → not an exception; a flag on a successful result
+│   ├── MEASUREMENT_UNCERTAIN       → engine still runs, may abstain
+│   ├── COVERAGE_PARTIAL            → some regions missing, said out loud
+│   └── EXPLANATION_TEMPLATED       → LLM unavailable or guard-failed
+└── SystemError                     → 5xx
+    ├── BackendUnavailable / BackendTimeout
+    ├── StorageError
+    └── ContractViolation           → the engine emitted a document failing its own schema</code></pre></div>
+<p>Propagation rules:</p>
+<ol>
+<li><strong>No foreign exception crosses a boundary.</strong> Each port defines its own error type; adapters translate. An <code>httpx</code> timeout becomes <code>BackendTimeout</code> at the adapter, never reaches the domain.</li>
+<li><strong>A bad fit is a result, not an error.</strong> The engine raises only on <code>ContractViolation</code>. "Nothing fits" is a perfectly good <code>FitAssessment</code> with <code>verdict: ABSTAIN</code>.</li>
+<li><strong>Fail closed on numbers, fail open on prose.</strong> A measurement we cannot trust produces an abstention. An explanation we cannot generate produces a template. The request never fails because the LLM is down — that is C2 restated as an operational rule.</li>
+<li><strong>Partial data is declared, never silently dropped.</strong> A garment spec missing thigh circumference yields <code>coverage: PARTIAL</code> and <code>missing_regions: ["THIGH"]</code>, which the renderer is required to surface.</li>
+</ol>
+<h3 id="4-1-degradation-ladder">4.1 Degradation ladder</h3>
+<div class="tablewrap"><table><thead><tr><th>Failure</th><th>Behaviour</th><th>User-visible outcome</th></tr></thead><tbody><tr><td>LLM down / guard failure</td><td>Template renderer</td><td>Slightly blander prose, identical numbers</td></tr><tr><td>Measurement sigma above threshold</td><td>Engine abstains or widens to two sizes</td><td>"We're not confident enough to call it"</td></tr><tr><td>Measurement backend down</td><td>Fail the request</td><td>Retry prompt; no fabricated measurements</td></tr><tr><td>Garment spec missing regions</td><td>Partial assessment, declared</td><td>"We can't check the thigh on this one"</td></tr><tr><td>Capture gate failure</td><td>Reject before measuring</td><td>Specific instruction: step back, straighten up</td></tr></tbody></table></div>
+<hr class="rule" />
+<h2 id="5-observability">5. Observability</h2>
+<p><strong>The persisted <code>FitAssessment</code> is the primary telemetry artifact.</strong> It is the audit record (why did we tell this person to buy a 48?), the evaluation substrate, and the replay input for a future engine version. Everything else is secondary.</p>
+<ul>
+<li><strong>Correlation:</strong> <code>assessment_id</code> propagates from capture through to the order record. Without that join key, the end-to-end metric in Phase 7 is unmeasurable, so it is a Phase 1 requirement, not a Phase 6 nicety.</li>
+<li><strong>Metrics:</strong> per-gate rejection rate and retry count; backend latency, error rate, cost; per-region sigma distribution; abstain rate; verdict distribution; renderer fallback rate.</li>
+<li><strong>The guard-violation rate is a safety metric, not a quality metric.</strong> A rising count means the LLM is attempting to state numbers that are not in the contract. Alert on it.</li>
+<li><strong>Sigma calibration is monitored, not assumed.</strong> Phase 7 measures whether our 1σ really contains ~68% of ground truth. A miscalibrated sigma silently breaks abstention, which silently breaks C6.</li>
+<li><strong>PII:</strong> images are the sensitive asset. Logs carry references, never pixels. The <code>PhotoStore</code> port has a deletion API and a retention policy; measurement records may outlive images and usually should.</li>
+</ul>
+<hr class="rule" />
+<h2 id="6-phased-implementation-plan">6. Phased implementation plan</h2>
+<p>Eight phases. Phase 0 is one I added: the shared vocabulary. Everything else depends on it, and building it inside Phase 1 would make the <code>Measure</code> invariant an acquisition concern rather than a system-wide one.</p>
+<p>Ordering rationale: 0 → 4 → 3 → 1 → 2 → 5 → 6 → 7 is the <em>dependency</em> order, but I propose building in the order <strong>0, 4, 3, 5, 1, 2, 6, 7</strong> — fit engine and catalog first, against synthetic bodies. The engine is the part with real intellectual content, it is testable with zero infrastructure, and building it early forces the contract to be right before anything depends on it. Measurement, the expensive and uncertain part, comes after we know exactly what shape of input it must produce.</p>
+<h3 id="phase-0-domain-kernel-fitkit-domain">Phase 0 — Domain kernel (<code>fitkit.domain</code>)</h3>
+<p><strong>Responsibility.</strong> Define the vocabulary and the invariants: quantities with uncertainty, body and garment regions, fabric, policies, errors, ports, and the <code>FitAssessment</code> contract.</p>
+<p><strong>Non-goals.</strong> No algorithms. No I/O. No persistence models. Not a place for "utilities".</p>
+<p><strong>Public interface.</strong></p>
+<div class="codewrap"><pre class="lang-python"><code>Cm = float
+
+class MeasureSource(StrEnum): ...
+class BodyRegion(StrEnum):
+    BUST; UNDERBUST; WAIST; HIP; THIGH; NECK; SHOULDER_WIDTH; ARM_LENGTH; INSEAM; HEIGHT
+class GarmentRegion(StrEnum):
+    CHEST_FLAT; WAIST_FLAT; HIP_FLAT; THIGH_FLAT; SHOULDER; SLEEVE_LENGTH; INSEAM; TOTAL_LENGTH
+class GarmentCategory(StrEnum): TROUSERS; DRESS; TOP; JACKET; SKIRT
+class FitIntent(StrEnum): SLIM; REGULAR; OVERSIZED
+class FitPreference(StrEnum): TIGHTER; AS_DESIGNED; LOOSER
+
+@dataclass(frozen=True, slots=True)
+class Measure:
+    value_cm: float
+    sigma_cm: float
+    source: MeasureSource
+    def __sub__(self, other: &quot;Measure&quot;) -&gt; &quot;Measure&quot;: ...
+    def __add__(self, other: &quot;Measure&quot;) -&gt; &quot;Measure&quot;: ...
+    def scaled(self, factor: float) -&gt; &quot;Measure&quot;: ...
+
+@dataclass(frozen=True)
+class BodyMeasurements:
+    values: Mapping[BodyRegion, Measure]
+    scale_sigma_rel: float
+    provenance: MeasurementProvenance
+
+@dataclass(frozen=True)
+class FabricSpec:
+    stretch_class: StretchClass
+    elongation_pct: float | None       # measured extension at a defined load
+    recovery: RecoveryClass
+    composition: str | None
+
+@dataclass(frozen=True)
+class GarmentSizeSpec:
+    size_label: str
+    measurements: Mapping[GarmentRegion, Measure]   # note: Measure, so specs carry sigma
+
+@dataclass(frozen=True)
+class GarmentSpec:
+    garment_id: GarmentId
+    version: int
+    category: GarmentCategory
+    size_system: str
+    fit_intent: FitIntent
+    fabric: FabricSpec
+    sizes: Sequence[GarmentSizeSpec]
+
+# Ports (Protocols) — defined here, implemented outward
+class MeasurementBackend(Protocol): ...
+class ScaleCalibrationSource(Protocol): ...
+class GarmentRepository(Protocol): ...
+class ExplanationRenderer(Protocol): ...
+class LlmClient(Protocol): ...
+class PhotoStore(Protocol): ...
+class AssessmentStore(Protocol): ...
+class Clock(Protocol): ...</code></pre></div>
+<p><strong>Dependencies.</strong> None. Standard library only.</p>
+<p><strong>Patterns applied.</strong></p>
+<ul>
+<li><strong>Value Object</strong> (not GoF-catalogued but the load-bearing one): <code>Measure</code> and all specs are frozen and compared by value. <em>What varies:</em> nothing — that is the point. <em>What breaks without it:</em> mutable measurements shared across a request make the audit record a lie, and <code>Measure</code>'s invariant becomes unenforceable.</li>
+<li><strong>Nothing else.</strong> There is no factory, no builder, no registry here. Dataclasses and enums are sufficient and anything more would be the gratuitous indirection you warned about.</li>
+</ul>
+<p><strong>Test strategy.</strong> Pure unit tests. Property-based tests (Hypothesis) on <code>Measure</code> arithmetic: sigma never decreases under subtraction; construction with <code>sigma &lt;= 0</code> always raises; <code>a - b</code> and <code>b - a</code> have equal sigma and opposite value.</p>
+<p><strong>Acceptance criteria.</strong></p>
+<ul>
+<li><code>import fitkit.domain</code> pulls in no third-party package (checked by a test that inspects <code>sys.modules</code> before/after).</li>
+<li>100% branch coverage on <code>Measure</code> validation.</li>
+<li>A grep-based test asserts no public dataclass field in <code>domain</code> is annotated as a bare <code>float</code> with a name ending in <code>_cm</code> other than inside <code>Measure</code>.</li>
+<li><code>import-linter</code> contract passes: <code>domain</code> is the innermost layer.</li>
+</ul>
+<p><strong>Integration contract.</strong> Every other phase imports these types. Breaking changes here are breaking changes everywhere; the module is versioned with the package.</p>
+<h3 id="phase-4-built-2nd-deterministic-fit-engine-fitkit-fit-engine">Phase 4 (built 2nd) — Deterministic fit engine (<code>fitkit.fit_engine</code>)</h3>
+<p><strong>Responsibility.</strong> Given body measurements, a garment spec, a fit preference and a policy, produce a <code>FitAssessment</code>. All arithmetic, thresholding, ranking, size selection and abstention live here and nowhere else.</p>
+<p><strong>Non-goals.</strong> No persistence, no clock, no randomness, no network, no natural language, no knowledge that an LLM exists.</p>
+<p><strong>Public interface.</strong></p>
+<div class="codewrap"><pre class="lang-python"><code>class FitEngine(Protocol):
+    def assess(
+        self,
+        body: BodyMeasurements,
+        garment: GarmentSpec,
+        preference: FitPreference,
+        policy: FitPolicy,
+    ) -&gt; FitAssessment: ...
+
+class EaseRulePolicy(Protocol):
+    def required_ease(
+        self, region: BodyRegion, category: GarmentCategory,
+        intent: FitIntent, preference: FitPreference,
+    ) -&gt; EaseInterval: ...            # min / preferred / max, in cm
+
+class StretchModel(Protocol):
+    def usable_extension(
+        self, fabric: FabricSpec, region: BodyRegion, category: GarmentCategory,
+    ) -&gt; float: ...                   # fraction of circumference, &gt;= 0
+
+class AbstainPolicy(Protocol):
+    def decide(self, ranked: Sequence[SizeScore], body: BodyMeasurements) -&gt; Verdict: ...</code></pre></div>
+<p><strong>Algorithm.</strong></p>
+<ol>
+<li><strong>Region mapping.</strong> Garment flat measures are converted to comparable body quantities (a flat waist of 40 cm becomes an 80 cm circumference) as a <code>Measure</code>, doubling the sigma with the value.</li>
+<li><strong>Effective garment circumference.</strong> <code>eff(r,s) = garment(r,s) * (1 + usable_extension)</code>. Usable extension is zero when <code>recovery == POOR</code> beyond a small allowance — a fabric that stretches and stays stretched does not give you a size, it gives you a bagged-out garment after three wears. <strong>This is where C4 lives.</strong></li>
+<li><strong>Ease.</strong> <code>delta(r,s) = eff(r,s) − body(r)</code>, a <code>Measure</code>, sigma combined.</li>
+<li><strong>Per-region penalty.</strong> A piecewise function of <code>delta</code> against <code>EaseInterval</code>, asymmetric: too tight is penalised harder than too loose, and the asymmetry is a policy parameter, not a constant.</li>
+<li><strong>Aggregation.</strong> Weighted by region, weights supplied by category (trousers weight waist/hip/thigh/inseam; a dress weights bust/waist/hip). Critical regions can veto.</li>
+<li><strong>Uncertainty propagation (C6).</strong> The score is evaluated over the <em>distribution</em>, not the point estimate, using <strong>deterministic Gauss–Hermite quadrature</strong> — a fixed 5-node grid over the shared scale factor, with the independent residual handled analytically per region. Fixed nodes and fixed weights mean the result is bit-reproducible for identical inputs. Monte Carlo is explicitly rejected: it would make the engine non-deterministic or force a seed, and a seeded RNG in a "deterministic engine" is a trap for the next maintainer.</li>
+<li><strong>Verdict.</strong> Quadrature yields <code>P(size s is best)</code> for each size. Then: <code>P(top) ≥ τ_single</code> → SINGLE; <code>P(top) + P(second) ≥ τ_pair</code> and both plausible → TWO_SIZES; otherwise, or if a critical region's sigma exceeds <code>σ_max</code> → ABSTAIN with a reason code. <strong>Widening to two sizes is derived from the arithmetic, not hand-tuned per case.</strong></li>
+</ol>
+<p><strong>Dependencies.</strong> <code>fitkit.domain</code> only.</p>
+<p><strong>Patterns applied.</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Pattern</th><th>What varies</th><th>What breaks without it</th></tr></thead><tbody><tr><td><strong>Strategy</strong> — <code>EaseRulePolicy</code></td><td>Garment category, brand fit philosophy, merchant overrides</td><td>A growing <code>if category == ...</code> inside the scorer; per-merchant tuning becomes a fork</td></tr><tr><td><strong>Strategy</strong> — <code>StretchModel</code></td><td>How usable extension is derived: linear class-based (v1) → measured tension curve (v2)</td><td>Fabric maths welded into scoring; C4 becomes untestable in isolation</td></tr><tr><td><strong>Strategy</strong> — <code>AbstainPolicy</code></td><td>Merchant risk appetite. Free returns tolerate a confident guess; made-to-order does not</td><td>Abstention thresholds become global constants and every merchant gets the wrong one</td></tr></tbody></table></div>
+<p><strong>Patterns deliberately NOT applied</strong>, with reasons, because you asked:</p>
+<ul>
+<li><strong>Template Method</strong> for the scoring pipeline — rejected. It would put the pipeline in a base class and the variation in subclasses. A plain function composing three injected strategies is clearer and does not create an inheritance hierarchy. Composition over inheritance.</li>
+<li><strong>Visitor</strong> over region types — rejected. Regions are an enum, not a type hierarchy; a dict lookup is the correct tool.</li>
+<li><strong>Factory / Abstract Factory</strong> — rejected. The composition root constructs strategies with plain calls. A factory would add a layer whose only job is to call a constructor.</li>
+<li><strong>Chain of Responsibility</strong> for the verdict rules — rejected. The rules are a short, ordered, total decision function; <code>if/elif/else</code> in one place is more readable and more testable than four classes.</li>
+</ul>
+<p><strong>Test strategy.</strong></p>
+<ul>
+<li><em>Unit, no doubles needed</em> — the engine is pure, so every test is a table test. Golden cases per category, including the ones that matter: −2 cm waist on rigid denim (should be TIGHT and probably a size up) vs −2 cm on 4-way elastane (should be AS_INTENDED).</li>
+<li><em>Property-based</em> — monotonicity: increasing a body measurement never improves the score of a too-tight region; increasing sigma never increases <code>P(top)</code>; the sum of size probabilities is 1 ± ε.</li>
+<li><em>Determinism</em> — the same inputs produce a byte-identical serialized document, asserted across 1000 repeats and across a fresh interpreter (guards against dict-ordering and hash-seed dependence).</li>
+<li><em>Contract</em> — every produced document validates against the JSON Schema. This is the <code>ContractViolation</code> tripwire.</li>
+<li><strong>Fakes needed:</strong> none. That is the strongest argument that the boundary is right.</li>
+</ul>
+<p><strong>Acceptance criteria.</strong></p>
+<ul>
+<li>A hand-computed reference table of ≥ 40 (body, garment, fabric) cases is reproduced exactly.</li>
+<li>Mutation testing on the scoring module ≥ 85% killed.</li>
+<li>Zero imports outside <code>fitkit.domain</code> and the standard library, enforced in CI.</li>
+<li>Given a body whose waist sigma is set to 3.0 cm against a 4 cm size step, the engine <strong>must</strong> return TWO_SIZES or ABSTAIN. This single test is the executable form of C6.</li>
+</ul>
+<p><strong>Integration contract.</strong> Emits <code>FitAssessment v1</code> (§3). Consumes <code>BodyMeasurements</code>, <code>GarmentSpec</code>, <code>FitPolicy</code>. Versioned per §3.3.</p>
+<h3 id="phase-3-built-3rd-garment-catalog-fitkit-catalog">Phase 3 (built 3rd) — Garment catalog (<code>fitkit.catalog</code>)</h3>
+<p><strong>Responsibility.</strong> Ingest per-size <em>physical</em> garment measurements and fabric properties from supplier formats, normalise them (flat vs circumference, units, landmark conventions), attach uncertainty, version them immutably, and serve them.</p>
+<p><strong>Non-goals.</strong> No inference of missing sizes by interpolation in v1 (it hides grading reality). No scraping of marketing size charts. No fit logic.</p>
+<p><strong>Public interface.</strong></p>
+<div class="codewrap"><pre class="lang-python"><code>class GarmentRepository(Protocol):
+    def get(self, garment_id: GarmentId, version: int | None = None) -&gt; GarmentSpec: ...
+    def latest_version(self, garment_id: GarmentId) -&gt; int: ...
+
+class SpecImporter(Protocol):
+    source_format: SourceFormat
+    def parse(self, raw: bytes) -&gt; ImportResult: ...   # specs + per-row diagnostics
+
+class GarmentSpecBuilder:
+    def with_sizes(...) -&gt; Self
+    def with_fabric(...) -&gt; Self
+    def with_tolerance(...) -&gt; Self
+    def build(self) -&gt; GarmentSpec:  # validates; raises SizeSpecIncomplete
+        ...</code></pre></div>
+<p><strong>Dependencies.</strong> <code>fitkit.domain</code>. Storage adapter depends on the repository port, not the other way round.</p>
+<p><strong>Patterns applied.</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Pattern</th><th>What varies</th><th>What breaks without it</th></tr></thead><tbody><tr><td><strong>Adapter</strong> — one <code>SpecImporter</code> per supplier format</td><td>Every brand sends a different spreadsheet, tech pack or API payload</td><td>Format-specific parsing bleeds into the domain; adding a brand becomes a core change</td></tr><tr><td><strong>Builder</strong> — <code>GarmentSpecBuilder</code></td><td>A spec is assembled from <em>several documents</em> (measurement sheet, fabric sheet, grading rules) arriving at different times</td><td>Half-built specs leak into the system. <code>build()</code> is the single validation gate that makes an invalid <code>GarmentSpec</code> unconstructible</td></tr></tbody></table></div>
+<p><strong>Repository</strong> is used and named honestly as a DDD pattern, not a GoF one.</p>
+<p><strong>Test strategy.</strong> Importer unit tests against real (anonymised) supplier files, including malformed ones. Repository contract test suite run against both the in-memory fake and the real Postgres adapter — the same tests, two implementations, which is the whole point of the port. Round-trip property: parse → build → serialize → parse is identity.</p>
+<p><strong>Acceptance criteria.</strong></p>
+<ul>
+<li>A spec missing a region required by its category fails <code>build()</code> with a named error.</li>
+<li>Every stored spec is immutable; an update creates version <em>n+1</em> and version <em>n</em> remains retrievable forever (asserted, because Phase 7 replay depends on it).</li>
+<li>Unit conversion is exercised by a test in inches that must equal the cm fixture within 0.01 cm.</li>
+<li>Every <code>Measure</code> in a spec has a non-zero sigma, defaulting to a documented per-brand grading tolerance rather than to zero.</li>
+</ul>
+<p><strong>Integration contract.</strong> <code>GarmentSpec</code> with <code>version</code>. The version string appears in <code>inputs_digest</code>, which is what lets Phase 7 attribute a return to the exact spec in force.</p>
+<h3 id="phase-5-built-4th-explanation-layer-fitkit-explanation">Phase 5 (built 4th) — Explanation layer (<code>fitkit.explanation</code>)</h3>
+<p><strong>Responsibility.</strong> Turn one <code>FitAssessment</code> into localized prose.</p>
+<p><strong>Non-goals.</strong> No arithmetic. No data access. No knowledge of how the assessment was produced. No ability to change a recommendation.</p>
+<p><strong>Public interface.</strong></p>
+<div class="codewrap"><pre class="lang-python"><code>@dataclass(frozen=True)
+class Explanation:
+    text: str
+    renderer_id: str
+    degraded: bool
+    guard_report: GuardReport
+
+class ExplanationRenderer(Protocol):
+    supported_schema_versions: SemverRange
+    def render(self, assessment: FitAssessment, ctx: RenderContext) -&gt; Explanation: ...
+
+class LlmClient(Protocol):
+    def complete(self, prompt: Prompt, *, max_tokens: int) -&gt; Completion: ...</code></pre></div>
+<p>Implementations:</p>
+<ul>
+<li><code>TemplateRenderer</code> — <strong>the reference implementation.</strong> Complete, exactly reproducible, localizable, free. Not a fallback bolted on afterwards; it is written first and it defines what "correct output" means. C2 is satisfied by construction because the template renderer is the thing the LLM is compared against, not the thing that rescues it.</li>
+<li><code>LlmRenderer</code> — Adapter over <code>LlmClient</code>. Prompt carries the assessment JSON and the controlled vocabulary; the model's job is phrasing and ordering, nothing else.</li>
+<li><code>GuardedRenderer(inner, fallback, guards)</code> — <strong>Decorator.</strong> Runs numeric-allowlist, banned-claim, length and locale guards; on any violation returns the fallback's output with <code>degraded=True</code> and a populated <code>guard_report</code>.</li>
+</ul>
+<p><strong>Model choice.</strong> Default <code>claude-opus-5</code> (1M context; $5/$25 per MTok input/output). This is a short structured-to-prose transform, so per-call cost is dominated by a small fixed prompt; prompt caching on the stable system prompt and vocabulary applies directly. Whether high volume justifies a cheaper model is a cost decision that is yours, not mine — it is Open Question 7, and the port makes it a one-line change either way.</p>
+<p><strong>Dependencies.</strong> <code>fitkit.domain.contracts</code> only. Enforced in CI.</p>
+<p><strong>Patterns applied.</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Pattern</th><th>What varies</th><th>What breaks without it</th></tr></thead><tbody><tr><td><strong>Strategy</strong> — <code>ExplanationRenderer</code></td><td>Template vs LLM vs A/B experiment arm vs a future vendor</td><td>C2 becomes untestable; swapping renderers means editing the orchestrator</td></tr><tr><td><strong>Decorator</strong> — <code>GuardedRenderer</code></td><td>Guards compose and are added over time; each must be independently testable and reusable across renderers</td><td>Guard logic lives inside <code>LlmRenderer</code>, cannot be unit-tested alone, and is silently absent from any renderer added later — which is exactly how C1 erodes</td></tr></tbody></table></div>
+<p><strong>Not applied:</strong> Chain of Responsibility for the fallback sequence — a two-element decorator is sufficient and a chain would be ceremony. Observer for guard events — a metrics port call is a function call.</p>
+<p><strong>Test strategy.</strong></p>
+<ul>
+<li><code>TemplateRenderer</code>: golden-file tests per locale over the full corpus of assessment fixtures. Exactly reproducible, so byte comparison is legitimate.</li>
+<li><code>GuardedRenderer</code>: unit-tested with a <code>StubLlmClient</code> returning adversarial outputs — invented numbers, a recommendation contradicting the verdict, a different size label, wrong locale. Each must be caught. <strong>These are the tests that prove C1.</strong></li>
+<li><code>LlmRenderer</code>: contract test against a recorded-response fake for CI; a small nightly live-API suite, quarantined from the main pipeline so the build never depends on a network.</li>
+<li>Compatibility matrix: every renderer × every supported schema version × golden documents.</li>
+</ul>
+<p><strong>Acceptance criteria.</strong></p>
+<ul>
+<li>Deleting the <code>LlmClient</code> implementation from the build leaves every test green except the quarantined live suite. <strong>This is the executable definition of C2.</strong></li>
+<li>A mutation test that alters <code>delta_cm</code> in the fixture must change the template output — proving the renderer actually reads the contract rather than reciting boilerplate.</li>
+<li>Guard catches 100% of a curated adversarial corpus of ≥ 30 hand-written bad completions.</li>
+<li>No renderer imports <code>fitkit.fit_engine</code> (CI-enforced).</li>
+</ul>
+<p><strong>Integration contract.</strong> In: <code>FitAssessment v1</code>. Out: <code>Explanation</code>.</p>
+<h3 id="phase-1-built-5th-acquisition-and-capture-quality-gating-fitkit-acquisition">Phase 1 (built 5th) — Acquisition and capture-quality gating (<code>fitkit.acquisition</code>)</h3>
+<p><strong>Responsibility.</strong> Turn raw camera frames plus declared attributes into a validated <code>CaptureBundle</code>, or a structured rejection carrying <em>actionable</em> remediation.</p>
+<p><strong>Non-goals.</strong> No measuring. No body model. No image storage policy (that is the <code>PhotoStore</code> port). No UI.</p>
+<p><strong>Public interface.</strong></p>
+<div class="codewrap"><pre class="lang-python"><code>class ViewKind(StrEnum): FRONTAL; LATERAL
+
+@dataclass(frozen=True)
+class GateVerdict:
+    gate_id: str
+    passed: bool
+    score: float
+    remediation: RemediationCode | None
+
+class CaptureQualityGate(Protocol):
+    gate_id: str
+    def evaluate(self, frame: Frame, view: ViewKind) -&gt; GateVerdict: ...
+
+@dataclass(frozen=True)
+class CaptureBundle:
+    capture_id: CaptureId
+    frontal: PhotoRef
+    lateral: PhotoRef
+    declared_height: Measure          # sigma from measured self-report error, not zero
+    declared_weight: Measure | None
+    device: DeviceMetadata
+    depth_samples: DepthSample | None # the C3 hook, unused in v1
+    gate_report: Sequence[GateVerdict]</code></pre></div>
+<p>Gates in v1: full-body framing, pose conformance (limb separation, arm angle), motion blur, exposure, background separability, subject-camera distance, device verticality from the IMU, and a clothing-tightness heuristic. The last one matters: BodyM's Test-B degradation is partly a clothing effect, and loose clothing is the failure mode we can actually prevent at capture time.</p>
+<p><strong>Dependencies.</strong> <code>fitkit.domain</code>. The pose detector sits behind a port.</p>
+<p><strong>Patterns applied.</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Pattern</th><th>What varies</th><th>What breaks without it</th></tr></thead><tbody><tr><td><strong>Composite</strong> — <code>CompositeGate</code> implementing <code>CaptureQualityGate</code> over children</td><td>The gate set grows, differs per view, and differs per device class; a merchant may relax one</td><td>The orchestrator hard-codes a list and gate composition cannot be tested or configured as a unit</td></tr><tr><td><strong>Strategy</strong> — <code>PoseValidator</code></td><td>On-device (fast, private, weaker) vs server-side (stronger, costs a round trip)</td><td>The choice of where pose validation runs leaks into the capture flow</td></tr></tbody></table></div>
+<p><strong>Not applied:</strong> Chain of Responsibility. Fail-fast ordering with per-gate remediation is a <code>for</code> loop over an ordered list. Adding four classes to express <code>break</code> is the defect you described.</p>
+<p><strong>Test strategy.</strong> Each gate unit-tested against a labelled fixture corpus of good and bad frames (blurred, cropped, backlit, cluttered background, arms down). Composite tested with stub gates — no images needed — for ordering and short-circuit semantics. Integration test over a small real-photo corpus asserting the false-reject rate stays under budget, because a gate that rejects good captures is a conversion killer and needs a number attached.</p>
+<p><strong>Acceptance criteria.</strong></p>
+<ul>
+<li>Every rejection carries at least one <code>RemediationCode</code> that maps to a user-facing instruction. A rejection with no remediation fails the test suite.</li>
+<li>False-reject rate on the curated "good capture" corpus &lt; 5%; false-accept rate on the curated "bad capture" corpus &lt; 10%. Both numbers are provisional and must be re-set once Phase 7 relates gate scores to measurement error.</li>
+<li><code>declared_height.sigma_cm &gt; 0</code> always. A test asserts no code path can construct a declared height with zero uncertainty.</li>
+</ul>
+<p><strong>Integration contract.</strong> <code>CaptureBundle v1</code>, serializable, with <code>capture_id</code> as the join key that eventually reaches the order record.</p>
+<h3 id="phase-2-built-6th-measurement-estimation-fitkit-measurement">Phase 2 (built 6th) — Measurement estimation (<code>fitkit.measurement</code>)</h3>
+<p><strong>Responsibility.</strong> Turn a <code>CaptureBundle</code> into <code>BodyMeasurements</code> <strong>with honest uncertainty</strong>, from a swappable backend.</p>
+<p><strong>Non-goals.</strong> No fit logic. No capture validation. No opinion about garments.</p>
+<p><strong>Public interface.</strong></p>
+<div class="codewrap"><pre class="lang-python"><code>class ScaleCalibrationSource(Protocol):
+    source_id: str
+    def calibrate(self, bundle: CaptureBundle) -&gt; ScaleCalibration: ...
+    # ScaleCalibration = (scale_factor_or_reference, sigma_rel, source_id)
+
+class MeasurementBackend(Protocol):
+    backend_id: str
+    supported_regions: frozenset[BodyRegion]
+    def estimate(
+        self, bundle: CaptureBundle, calibration: ScaleCalibration
+    ) -&gt; BodyMeasurements: ...
+
+class UncertaintyCalibrator(MeasurementBackend):   # Decorator
+    def __init__(self, inner: MeasurementBackend, table: ResidualTable) -&gt; None: ...</code></pre></div>
+<p><code>ScaleCalibrationSource</code> implementations: <code>DeclaredHeightCalibration</code> (v1), <code>DepthSensorCalibration</code> (ARKit/ARCore, v2), <code>ReferenceObjectCalibration</code> (a credit card in frame — a cheap hedge). <strong>This separate port is C3.</strong> Height enters the system as a calibration <em>source</em>, so adding a depth source is a new implementation of one Protocol and touches no downstream code.</p>
+<p><strong>Patterns applied.</strong></p>
+<div class="tablewrap"><table><thead><tr><th>Pattern</th><th>What varies</th><th>What breaks without it</th></tr></thead><tbody><tr><td><strong>Strategy</strong> — <code>ScaleCalibrationSource</code></td><td>Where metric scale comes from: declared height now, device depth later, reference object as a hedge</td><td>Height gets baked into every backend adapter and C3 requires editing every one of them</td></tr><tr><td><strong>Adapter</strong> — one per vendor/model</td><td>Wire formats, auth, error shapes, region naming, units</td><td>Vendor types reach the domain; C5's "it will be replaced" becomes a rewrite</td></tr><tr><td><strong>Decorator</strong> — <code>UncertaintyCalibrator</code></td><td><em>Where sigma comes from</em> is independent of <em>where the measurement comes from</em></td><td>A vendor returning bare numbers gets sigma = 0 by default and C6 is silently defeated. This decorator is the only reason a black-box API can participate honestly</td></tr></tbody></table></div>
+<p><code>UncertaintyCalibrator</code> deserves emphasis. Vendors return point estimates. Left alone, the adapter author picks a sigma and the number is folklore. Instead, sigma is looked up from a <code>ResidualTable</code> produced by Phase 7 from our own tape-measured panel, keyed by backend version, region, and coarse body-shape bucket, and the table is a versioned artifact recorded in <code>inputs_digest</code>. <strong>Our uncertainty estimate is a measurement, not an opinion.</strong></p>
+<p><strong>Test strategy.</strong></p>
+<ul>
+<li>Adapters: unit-tested against recorded vendor responses, including error and partial responses. No live calls in CI.</li>
+<li><code>UncertaintyCalibrator</code>: unit-tested with a stub backend and a synthetic residual table.</li>
+<li>A <strong>backend contract test suite</strong> every implementation must pass: units are cm, regions are complete or explicitly absent, sigma is positive, provenance is populated, the same bundle twice yields the same result (or the backend declares itself non-deterministic). This suite is what makes C5 real — a replacement backend is "done" when it passes it.</li>
+<li>Integration: one nightly live call per vendor, quarantined.</li>
+<li><strong>Fakes the interfaces enable:</strong> <code>FixedMeasurementBackend</code> (returns a canned body), <code>PerturbingBackend</code> (adds known error, for testing abstention end-to-end), and <code>FailingBackend</code> (for the degradation ladder).</li>
+</ul>
+<p><strong>Acceptance criteria.</strong></p>
+<ul>
+<li>Swapping backends in the composition root requires zero changes outside that file — demonstrated by running the full suite against two implementations.</li>
+<li>No <code>BodyMeasurements</code> can be constructed with a zero or absent sigma.</li>
+<li>On the validation panel, empirical 1σ coverage is within [60%, 76%] (nominal 68%). A backend whose sigma is not calibrated is not shippable, regardless of its MAE.</li>
+<li>The <code>ResidualTable</code> version appears in every emitted <code>FitAssessment</code>.</li>
+</ul>
+<p><strong>Integration contract.</strong> In: <code>CaptureBundle v1</code>. Out: <code>BodyMeasurements</code> + provenance.</p>
+<h3 id="phase-6-built-7th-orchestration-and-public-api-fitkit-orchestration">Phase 6 (built 7th) — Orchestration and public API (<code>fitkit.orchestration</code>)</h3>
+<p><strong>Responsibility.</strong> Wire the concrete implementations (composition root), expose the public operation, own timeouts, retries, idempotency and the degradation ladder.</p>
+<p><strong>Non-goals.</strong> No business rules. If a decision is being made here, it belongs in the fit engine or a policy.</p>
+<p><strong>Public interface.</strong></p>
+<div class="codewrap"><pre class="lang-python"><code>@dataclass(frozen=True)
+class AdviceRequest:
+    capture: CaptureBundle
+    garment_id: GarmentId
+    preference: FitPreference
+    locale: Locale
+    merchant_id: MerchantId
+
+@dataclass(frozen=True)
+class AdviceResult:
+    assessment: FitAssessment
+    explanation: Explanation
+    degradations: Sequence[DegradationCode]
+
+class SizeAdvisor:
+    def __init__(self, backend: MeasurementBackend, calibration: ScaleCalibrationSource,
+                 garments: GarmentRepository, engine: FitEngine,
+                 renderer: ExplanationRenderer, store: AssessmentStore,
+                 clock: Clock, metrics: MetricsPort) -&gt; None: ...
+    def advise(self, request: AdviceRequest) -&gt; AdviceResult: ...</code></pre></div>
+<p>Every dependency is a constructor parameter. No singletons, no service locator, no module- level globals, no framework magic. The composition root is one function that reads configuration and constructs the graph.</p>
+<p><strong>Patterns applied.</strong></p>
+<ul>
+<li><strong>Facade</strong> — <code>SizeAdvisor</code>. <em>What varies:</em> nothing about it; it is a single stable entry point over five subsystems. <em>What breaks without it:</em> callers assemble the pipeline themselves and the ordering, degradation and persistence rules get reimplemented per caller. Honest note: this is a facade because the system genuinely has five subsystems, not because a pattern was wanted.</li>
+<li><strong>Not</strong> applied: Abstract Factory for environment-specific object graphs. A composition root with <code>if settings.env == "test"</code> is one readable function; an abstract factory family would add three classes to express it.</li>
+</ul>
+<p><strong>Test strategy.</strong> End-to-end tests with all ports faked — no network, no database, runs in milliseconds. Every rung of the degradation ladder gets a test: LLM fails → templated and <code>degraded=True</code>; measurement uncertain → ABSTAIN reaches the user; backend down → typed error, no fabricated numbers. Idempotency: the same <code>capture_id</code> + garment + policy returns the stored assessment rather than recomputing.</p>
+<p><strong>Acceptance criteria.</strong></p>
+<ul>
+<li>Full pipeline with fakes runs in &lt; 100 ms and requires no external service.</li>
+<li>Killing the LLM adapter does not fail any non-quarantined test (C2, again, end-to-end).</li>
+<li>Every <code>advise()</code> call persists exactly one <code>FitAssessment</code>, and its <code>assessment_id</code> is returned to the caller for the order join.</li>
+<li>No module outside <code>orchestration</code> names a concrete adapter class (CI-enforced).</li>
+</ul>
+<h3 id="phase-7-built-8th-offline-evaluation-harness-fitkit-evaluation">Phase 7 (built 8th) — Offline evaluation harness (<code>fitkit.evaluation</code>)</h3>
+<p><strong>Responsibility.</strong> Answer two questions with numbers: <em>are our measurements and our sigmas honest?</em> and <em>does the recommendation reduce size-related returns?</em></p>
+<p><strong>Non-goals.</strong> Not an analytics dashboard. Not online experimentation infrastructure (though it consumes its output).</p>
+<h4 id="7a-measurement-accuracy-and-sigma-calibration">7a. Measurement accuracy and sigma calibration</h4>
+<ul>
+<li>A validation panel of subjects measured with tape by a trained measurer to ISO 8559-1 landmarks, each also captured through the real protocol.</li>
+<li>Reports per-region MAE, bias, and the error distribution by body-shape bucket — bucketing matters because BMnet's own results show error concentrates at high BMI, and a global MAE hides a fairness problem.</li>
+<li><strong>Sigma calibration is the distinctive check:</strong> what fraction of ground-truth values fall within ±1σ of our estimate? If that is 40% rather than 68%, our abstention logic is decorative and C6 is not being met. This check produces the <code>ResidualTable</code> that Phase 2's <code>UncertaintyCalibrator</code> consumes — so the harness is not merely a report, it is a component of the runtime system.</li>
+</ul>
+<h4 id="7b-end-to-end-size-accuracy-against-purchase-and-return-outcomes">7b. End-to-end size accuracy against purchase and return outcomes</h4>
+<p>This is the metric that matters and it is the hardest to get right.</p>
+<p><strong>Primary metric:</strong> size-related return rate among orders where a recommendation was shown, against a randomized control. Requires return-reason codes distinguishing "too small" and "too big" from taste returns. <strong>Without reason codes this metric does not exist</strong> — that is Open Question 2 and it is a hard dependency, not a nice-to-have.</p>
+<p><strong>Secondary metrics:</strong> kept-rate; exchange-to-adjacent-size rate; agreement between the recommended size and the size finally kept on bracketed multi-size orders (a strong signal that needs no reason codes); abstention rate; coverage.</p>
+<p><strong>The confound you must not skip.</strong> The recommendation changes what people buy, so recommended-size orders are not comparable to non-recommended ones. Observational before/after comparison will flatter us. I recommend a <strong>user-level randomized holdout (~5%)</strong> who see the merchant's own size chart. It is the only clean estimate, and it needs to be agreed commercially before launch, not retrofitted — Open Question 3.</p>
+<p><strong>Offline replay.</strong> Every <code>FitAssessment</code> is persisted with its <code>inputs_digest</code>. A candidate engine or policy version is replayed over the historical corpus, producing counterfactual recommendations compared against the size actually kept. This is why garment specs are immutable and versioned and why the contract is versioned: replay is only valid if we can reconstruct the exact inputs. Replay gives us a cheap offline signal; the holdout gives us the truth.</p>
+<p><strong>Risk–coverage curve.</strong> Because abstention is a first-class outcome, accuracy alone is meaningless — a system that abstains on everything is perfectly accurate and worthless. The harness plots accuracy against abstention rate so merchants can choose an operating point, and so we can detect the failure mode where we buy accuracy by refusing to answer.</p>
+<p><strong>A ceiling to be honest about up front.</strong> With ~2 cm measurement error against a ~4 cm size step, a meaningful share of shoppers genuinely sit between sizes and no engine resolves them. Targets should be framed as <em>relative reduction in size-related returns versus control</em>, never as absolute size-prediction accuracy.</p>
+<p><strong>Patterns applied.</strong> None beyond ports already defined. This phase is scripts, SQL and statistics; imposing patterns here would be exactly the gratuitous indirection you warned against.</p>
+<p><strong>Acceptance criteria.</strong></p>
+<ul>
+<li>Replaying a fixed historical corpus twice produces identical output (determinism, again).</li>
+<li>The harness recomputes published measurement-accuracy figures from raw data with a single command — no manual spreadsheet steps.</li>
+<li>Sigma-calibration coverage is reported per region and per body-shape bucket, and CI fails the release if any critical region is outside [60%, 76%].</li>
+</ul>
+<hr class="rule" />
+<h2 id="7-where-i-think-you-are-wrong-or-at-least-incomplete">7. Where I think you are wrong, or at least incomplete</h2>
+<p>You asked for judgement rather than compliance. Five points, strongest first.</p>
+<h3 id="7-1-the-primary-failure-mode-is-probably-garment-data-not-body-measurement">7.1 The primary failure mode is probably garment data, not body measurement</h3>
+<p>C6 names silent false precision in <em>body</em> measurement as the primary failure mode. I think that is the second failure mode.</p>
+<p>A garment's real measurement is not a number — it is a distribution. Cutting, sewing and grading tolerances mean two garments of the same SKU and size differ, and published tolerances in the 1–2 cm range on circumference measures are routine. That is the same order as our body measurement error, it is invisible to us, it is not reduced by any model improvement, and it is <em>systematically</em> wrong per factory run rather than randomly wrong per shopper. If the tech pack says 82 cm and the actual run measures 84 cm, every shopper recommended that size is wrong in the same direction, and returns will look like a measurement problem.</p>
+<p><strong>I have designed for this</strong> — <code>GarmentSizeSpec</code> uses <code>Measure</code>, so specs carry sigma, and the fit engine propagates it. But it needs a data commitment from you: per-brand grading tolerance, and ideally spot-measurement of physical samples. Note the uncomfortable implication: if garment sigma is 1.5 cm and body sigma is 1.5 cm, combined sigma is ~2.1 cm against a 4 cm step, and the honest abstention rate may be higher than the business will tolerate. Better to discover that in Phase 4 with synthetic data than after launch.</p>
+<p><em>I am not asking you to relitigate C6 — I am asking to extend it to the garment side.</em></p>
+<h3 id="7-2-c1-protects-the-arithmetic-but-not-the-rhetoric">7.2 C1 protects the arithmetic but not the rhetoric</h3>
+<p>"The LLM never decides the size" is necessary and not sufficient. An LLM that faithfully reports "waist −2 cm" and then writes "should still feel comfortable" has changed the purchase decision without touching a number. My additions: <code>classification</code> as a closed enum in the contract, a controlled vocabulary keyed to it, and a banned-claim guard alongside the numeric guard. Without those, C1 is satisfied on paper and violated in effect.</p>
+<h3 id="7-3-the-llm-may-not-earn-its-place-at-launch">7.3 The LLM may not earn its place at launch</h3>
+<p>C2 makes the LLM optional. I would go further: <strong>ship template-only and A/B the LLM.</strong> The template renderer is free, exactly reproducible, trivially localizable, and passes legal review without a conversation. The LLM's value here — nicer prose on a short, highly structured message — is plausible but unproven, and you now have a harness that can measure it. Building the LLM path in Phase 5 is right; enabling it by default on day one is a choice that should be made with data. This is not an argument against C1 or C2; it is an argument that C2's escape hatch should be the default until the LLM proves itself.</p>
+<h3 id="7-4-declared-height-is-a-first-class-input-and-a-first-class-error-source">7.4 Declared height is a first-class input <em>and</em> a first-class error source</h3>
+<p>C3 makes height first-class. It should also be <em>uncertain</em>: people round to the nearest 5 cm, use decade-old figures, and inflate. A declared-height sigma of zero would propagate a false certainty through every circumference via the shared scale factor — the exact failure C6 exists to prevent, entering through the calibration door instead of the measurement door. <code>declared_height.sigma_cm &gt; 0</code> is therefore a Phase 1 acceptance criterion, and its actual value must be measured on the validation panel (declared vs measured height), not assumed.</p>
+<h3 id="7-5-weight-is-worth-more-than-height-and-you-have-not-asked-for-it">7.5 Weight is worth more than height, and you have not asked for it</h3>
+<p>This is evidence-backed, from the numbers in §1.2. On BodyM Test-A, adding height to multi-view drops waist MAE from 27.32 to 18.71 mm; adding <strong>weight instead</strong> drops it to 13.69 mm. Weight is the stronger single input, and height + weight together give the best chest and hip figures.</p>
+<p>Asking for weight has a real UX and sensitivity cost, and it may be the wrong call for a fashion audience. But it is currently absent from the flow and, on the evidence, it is the cheapest available accuracy improvement — cheaper than any backend change. I have left <code>declared_weight: Measure | None</code> in <code>CaptureBundle</code> so the option stays open at zero cost. Open Question 6.</p>
+<hr class="rule" />
+<h2 id="8-architecture-decision-records">8. Architecture Decision Records</h2>
+<p><strong>ADR-001 — The fit decision is deterministic code; the LLM only renders.</strong> <em>Context:</em> Numeric reasoning by an LLM is unauditable, non-reproducible, and cannot carry an uncertainty budget. <em>Options:</em> (a) LLM decides; (b) LLM decides with tool-calls into a calculator; (c) deterministic engine, LLM renders. <em>Decision:</em> (c), plus a post-generation numeric-allowlist guard and a controlled vocabulary. <em>Consequences:</em> Every recommendation is reproducible and auditable. Prose is less flexible. The guard is extra machinery that must itself be tested. Enforced structurally by the import graph, not by convention.</p>
+<p><strong>ADR-002 — Launch on a commercial measurement vendor behind a port.</strong> <em>Context:</em> No candidate has published accuracy on our protocol and population; time to the return-outcome feedback loop dominates. <em>Options:</em> (a) in-house from day one; (b) research stack; (c) vendor. <em>Decision:</em> (c), with the permissive open stack developed in parallel. <em>Consequences:</em> Fast to the loop; per-scan cost; a DPA and likely an Article 9 assessment; vendor uptime dependency. Reversible via <code>MeasurementBackend</code>.</p>
+<p><strong>ADR-003 — Reject SMPL-family models and the BodyM dataset for production.</strong> <em>Context:</em> SMPL/SMPL-X/STAR/SUPR are research-licensed with commercial sub-licensing only via Meshcapade, and the licence forbids training networks for commercial use; BodyM is CC BY-NC 4.0. <em>Decision:</em> Neither enters the production build; both may inform architecture and serve as research baselines. Every candidate checkpoint must have documented training-data provenance before adoption. <em>Consequences:</em> We forgo the best-published research stack; we avoid an existential licensing exposure. A Meshcapade commercial licence remains a live option if the economics work.</p>
+<p><strong>ADR-004 — Every length is a <code>Measure</code> with mandatory, non-zero uncertainty.</strong> <em>Context:</em> C6. <em>Options:</em> (a) sigma as an optional field; (b) a parallel confidence object; (c) a value type that cannot exist without sigma. <em>Decision:</em> (c), plus a two-component correlated-error model (shared scale + independent residual). <em>Consequences:</em> Uncertainty cannot be dropped by accident; more verbose call sites; full covariance is deferred and the shared-scale approximation is documented as such.</p>
+<p><strong>ADR-005 — Scale calibration is a separate port from measurement.</strong> <em>Context:</em> C3 requires a future depth-based calibration source without downstream change. <em>Decision:</em> <code>ScaleCalibrationSource</code> Protocol, with <code>DeclaredHeightCalibration</code> in v1. <em>Consequences:</em> One extra indirection now; adding ARKit/ARCore later is a new class and a wiring change. Justified because the axis of variation is named and near-term.</p>
+<p><strong>ADR-006 — Uncertainty is propagated by fixed-node quadrature, not Monte Carlo.</strong> <em>Context:</em> The engine must be bit-reproducible. <em>Options:</em> (a) point estimates plus a threshold; (b) Monte Carlo; (c) deterministic quadrature. <em>Decision:</em> (c) — 5-node Gauss–Hermite over the shared scale factor, analytic residuals per region. <em>Consequences:</em> Exactly reproducible and cheap; approximates non-Gaussian tails less well than MC; the node count is a tunable that must be justified against an MC reference in testing (offline only).</p>
+<p><strong>ADR-007 — <code>FitAssessment</code> is a versioned, serializable JSON contract with no free text.</strong> <em>Context:</em> This boundary is what enforces C1 and C2. <em>Decision:</em> Semver, mandatory <code>schema_version</code>, additive-only minors, closed enums, unknown enum → fail closed to template. <em>Consequences:</em> Renderers evolve independently; the compatibility test matrix grows; historical documents remain readable, which Phase 7 replay requires.</p>
+<p><strong>ADR-008 — The template renderer is the reference implementation, not a fallback.</strong> <em>Context:</em> C2. If the template path is an afterthought it rots and C2 becomes false. <em>Decision:</em> Write it first; it defines correct output; the LLM is measured against it. <em>Consequences:</em> Some duplicated phrasing effort; a genuinely testable system; the option to ship without the LLM at all (§7.3).</p>
+<p><strong>ADR-009 — Garment specs are immutable and versioned; measurements carry tolerance.</strong> <em>Context:</em> Replay validity and §7.1. <em>Decision:</em> Updates create new versions; old versions are retained indefinitely; every spec <code>Measure</code> has a non-zero sigma from documented grading tolerance. <em>Consequences:</em> Storage growth; correct attribution of returns; honest uncertainty; possibly a higher abstention rate than expected.</p>
+<p><strong>ADR-010 — Uncertainty estimates are measured, not asserted.</strong> <em>Context:</em> A vendor returning bare numbers would otherwise get sigma by folklore. <em>Decision:</em> <code>UncertaintyCalibrator</code> decorator reads a versioned <code>ResidualTable</code> produced by the evaluation harness; the table version is recorded in every assessment. <em>Consequences:</em> The evaluation harness becomes a runtime dependency, not just a report; a new backend cannot ship until it has been characterised on the validation panel — deliberately.</p>
+<p><strong>ADR-011 — End-to-end accuracy is measured against a randomized holdout.</strong> <em>Context:</em> Recommendations change purchase behaviour, so observational comparison is biased. <em>Decision:</em> ~5% user-level holdout on the merchant's own size chart, plus a hard requirement on return-reason codes. <em>Consequences:</em> A small revenue cost and a commercial conversation before launch; the only unbiased estimate of the metric that matters.</p>
+<p><strong>ADR-012 — Python 3.12+, standard library first.</strong> <em>Context:</em> Minimal dependencies. <em>Decision:</em> Runtime deps limited to <code>pydantic</code> <strong>or</strong> stdlib dataclasses + <code>jsonschema</code> for contract validation (decide in Phase 0), <code>anthropic</code> for the LLM adapter, <code>httpx</code> for vendor adapters, and the storage driver. Dev-only: <code>pytest</code>, <code>hypothesis</code>, <code>import-linter</code>, <code>mutmut</code>. Each earns its place: schema validation is the <code>ContractViolation</code> tripwire; <code>import-linter</code> is what makes the dependency-graph claim checkable rather than aspirational; <code>hypothesis</code> is how the <code>Measure</code> invariants get tested properly. <em>Consequences:</em> Small surface, easy to audit. <strong>Pending your confirmation that Python is the target.</strong></p>
+<hr class="rule" />
+<h2 id="9-open-questions">9. Open questions</h2>
+<p>Ordered by how much they would change the design.</p>
+<ol>
+<li><strong>Garment data.</strong> Do you have real per-size <em>physical</em> measurements and fabric stretch data from brands, or only marketing size charts? Who supplies grading tolerance? This is the biggest single risk to the whole system (§7.1).</li>
+<li><strong>Return-reason codes.</strong> Do merchant integrations expose "too small" / "too big" on returns? Without them the primary end-to-end metric cannot be computed and Phase 7 degrades to proxy metrics.</li>
+<li><strong>Randomized holdout.</strong> Is a ~5% control group commercially acceptable? If not, we should agree now what weaker evidence we will accept.</li>
+<li><strong>Launch categories.</strong> Which garment categories at launch? Each needs its own ease policy, region weights and validation set. Trousers and dresses are the highest-value and hardest; tops are the easiest.</li>
+<li><strong>Validation panel.</strong> Can we fund a tape-measured panel (subjects, demographics, budget)? Without one, no backend can be characterised and ADR-010 cannot be honoured. This is a procurement question with an engineering deadline.</li>
+<li><strong>Weight.</strong> Are you willing to ask for it, given it is the strongest single input on the verified evidence (§7.5)?</li>
+<li><strong>LLM economics.</strong> What is the expected assessment volume, and do you want the default model to be <code>claude-opus-5</code> or a cheaper tier? I have defaulted to Opus 5; the cost trade-off is yours.</li>
+<li><strong>Platform.</strong> Native mobile app, or web? A rigid capture protocol and any future ARKit/ARCore calibration effectively require native. This changes Phase 1 substantially.</li>
+<li><strong>Privacy posture.</strong> Are body photos treated as Article 9 biometric data in your target markets? On-device vs server processing, and retention, follow from that answer — and it materially affects whether a vendor API is viable at all.</li>
+<li><strong>Fit preference.</strong> Do we ask the shopper (tighter / as designed / looser), infer it from history, or omit it in v1?</li>
+<li><strong>Stretch measurement convention.</strong> Who defines it? "Stretch %" without a stated load is not a measurable quantity, and C4 needs it to be one. This likely needs a materials person, not an engineer.</li>
+<li><strong>Language and runtime.</strong> The repository currently contains an empty <code>LLM_1.py</code>. Confirming Python 3.12+ (ADR-012) before Phase 0 begins.</li>
+</ol>
+<hr class="rule" />
+<h2 id="10-what-phase-2-would-begin-with">10. What Phase 2 would begin with</h2>
+<p>On approval, Phase 2 implements <strong>Phase 0 (domain kernel)</strong> in the order you specified: restate the contract and acceptance criteria, write the tests first, implement, self- critique adversarially, apply warranted fixes, and run the full suite. It is deliberately small, has no dependencies, and every subsequent phase is shaped by it.</p>
+<footer>Phase 1 design · garment size prediction · awaiting approval before Phase 2</footer>
+</article>
+</div>
+</div>
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  if(!links.length || !('IntersectionObserver' in window)) return;
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var targets = Object.keys(map).map(function(id){ return document.getElementById(id); }).filter(Boolean);
+  var current = null;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        if(current) current.classList.remove('active');
+        current = map[e.target.id];
+        if(current) current.classList.add('active');
+      }
+    });
+  }, {rootMargin:'0px 0px -78% 0px', threshold:0});
+  targets.forEach(function(t){ io.observe(t); });
+})();
+</script>
