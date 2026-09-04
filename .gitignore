@@ -5,3 +5,7 @@ __pycache__/
 .hypothesis/
 *.egg-info/
 .DS_Store
+.coverage
+coverage.xml
+htmlcov/
+.import_linter_cache/

@@ -8,7 +8,7 @@ randomised holdout gives the truth.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Sequence
+from typing import Iterable
 
 from fitkit.domain.body import BodyMeasurements
 from fitkit.domain.contracts.fit_assessment import FitAssessment, Verdict

@@ -12,7 +12,6 @@ from fitkit.domain.contracts.explanation import Explanation
 from fitkit.domain.contracts.fit_assessment import (
     Coverage,
     FitAssessment,
-    RegionDelta,
     SizeAssessment,
     Verdict,
 )

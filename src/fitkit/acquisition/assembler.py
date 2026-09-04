@@ -8,7 +8,6 @@ from fitkit.domain.capture import (
     CaptureBundle,
     DeviceMetadata,
     GateVerdict,
-    PhotoRef,
     ViewKind,
 )
 from fitkit.domain.errors import CaptureRejected

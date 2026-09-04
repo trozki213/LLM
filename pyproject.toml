@@ -12,7 +12,12 @@ dev = [
   # import-linter earns its place from Phase 4, when a second package exists
   # for the layer contract to constrain. Declared now so the dev env is stable.
   "import-linter>=2",
+  "coverage>=7",
 ]
+# The LLM is opt-in (ADR-008): with no client the system renders through the template,
+# which is complete on its own. This extra exists so the install hint in
+# fitkit.explanation.anthropic_client names a command that actually works.
+llm = ["anthropic>=0.40"]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -24,3 +29,20 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
+
+[tool.coverage.run]
+branch = true
+source = ["src/fitkit"]
+
+[tool.coverage.report]
+# The suite runs with no network and no database, so anything genuinely unreachable is
+# a defect rather than an untestable path. Branch coverage stands at 98.1%; the floor is
+# one point below so the gate catches a regression without failing on a single line.
+fail_under = 97
+show_missing = true
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if typing.TYPE_CHECKING:",
+  "\\.\\.\\.$",
+]

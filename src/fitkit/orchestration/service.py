@@ -10,7 +10,6 @@ module-level state, no framework magic.
 
 from __future__ import annotations
 
-import datetime as dt
 import hashlib
 from dataclasses import dataclass
 from typing import Callable, Mapping
@@ -18,7 +17,7 @@ from typing import Callable, Mapping
 from fitkit.domain.capture import CaptureBundle
 from fitkit.domain.contracts.explanation import Explanation
 from fitkit.domain.contracts.fit_assessment import AbstainCode, Coverage, FitAssessment, Verdict
-from fitkit.domain.errors import DegradationCode, GarmentNotFound, StorageError
+from fitkit.domain.errors import DegradationCode, StorageError
 from fitkit.domain.policy import FitPolicy, FitPreference, Tone
 from fitkit.domain.ports import (
     AssessmentStore,
@@ -96,7 +95,7 @@ class SizeAdvisor:
         cached = self._load(assessment_id)
         if cached is not None:
             self._metrics.increment("advise.idempotent_hit")
-            return self._finish(cached, cached_explanation=None)
+            return self._finish(cached)
 
         calibration = self._calibration.calibrate(request.capture)
         body = self._backend.estimate(request.capture, calibration)
@@ -115,14 +114,15 @@ class SizeAdvisor:
             tone=request.tone,
         )
         self._store.save(assessment)
-        return self._finish(assessment, cached_explanation=None)
+        return self._finish(assessment)
 
     # -- internals ---------------------------------------------------------------
 
-    def _finish(
-        self, assessment: FitAssessment, *, cached_explanation: Explanation | None
-    ) -> AdviceResult:
-        explanation = cached_explanation or self._renderer.render(assessment)
+    def _finish(self, assessment: FitAssessment) -> AdviceResult:
+        # The explanation is always re-rendered, including on the idempotent path: it is
+        # cheap, it is derived purely from the assessment, and it is not persisted. The
+        # assessment is the audit record; the prose is not.
+        explanation = self._renderer.render(assessment)
         degradations = _degradations(assessment, explanation)
         self._metrics.increment(
             "advise.verdict", {"verdict": assessment.recommendation.verdict.value}
