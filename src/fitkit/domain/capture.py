@@ -62,6 +62,39 @@ class DeviceMetadata:
 
 
 @dataclass(frozen=True, slots=True)
+class FrameSignals:
+    """What a frame analyser extracted from one photograph.
+
+    Pixels never reach a gate. Gates reason about normalised signals, which is what makes
+    them pure functions that can be unit-tested without a single image on disk, and what
+    lets the analyser itself be swapped for a different CV stack.
+    """
+
+    view: ViewKind
+    head_visible: bool
+    feet_visible: bool
+    subject_frame_fraction: float
+    sharpness: float
+    exposure: float
+    background_separability: float
+    arm_separation: float
+    torso_verticality: float
+    device_pitch_deg: float
+    clothing_tightness: float
+
+    def __post_init__(self) -> None:
+        for name in (
+            "subject_frame_fraction", "sharpness", "exposure", "background_separability",
+            "arm_separation", "torso_verticality", "clothing_tightness",
+        ):
+            value = getattr(self, name)
+            if not math.isfinite(value) or not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be a normalised score in [0, 1], got {value!r}")
+        if not math.isfinite(self.device_pitch_deg):
+            raise ValueError("device_pitch_deg must be finite")
+
+
+@dataclass(frozen=True, slots=True)
 class GateVerdict:
     gate_id: str
     passed: bool

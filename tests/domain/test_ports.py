@@ -8,6 +8,8 @@ from fitkit.domain import ports
 
 
 EXPECTED = {
+    "FrameAnalyzer": {"analyze"},
+    "HttpTransport": {"post_json"},
     "MeasurementBackend": {"estimate"},
     "ScaleCalibrationSource": {"calibrate"},
     "GarmentRepository": {"get", "latest_version"},

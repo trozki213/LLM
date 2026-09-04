@@ -78,6 +78,14 @@ class StorageError(InfrastructureError):
     pass
 
 
+class UncalibratedBackend(InfrastructureError):
+    """A backend has no measured residuals, so we cannot state its uncertainty honestly.
+
+    Failing here is the point: ADR-010 says uncertainty is measured, not asserted, and a
+    backend that has not been characterised on the validation panel must not ship.
+    """
+
+
 class ContractViolation(InfrastructureError):
     """A document failed its own contract. Always fail closed on this."""
 

@@ -12,11 +12,25 @@ import datetime as dt
 import typing
 
 from fitkit.domain.body import BodyMeasurements, ScaleCalibration
-from fitkit.domain.capture import CaptureBundle, PhotoRef
+from fitkit.domain.capture import CaptureBundle, FrameSignals, PhotoRef, ViewKind
 from fitkit.domain.contracts.explanation import Explanation
 from fitkit.domain.contracts.fit_assessment import FitAssessment
 from fitkit.domain.garment import GarmentSpec
 from fitkit.domain.regions import BodyRegion
+
+
+class FrameAnalyzer(typing.Protocol):
+    """Pixels in, normalised signals out. The only place a CV stack is reachable from."""
+
+    analyzer_id: str
+
+    def analyze(self, image: bytes, view: ViewKind) -> FrameSignals: ...
+
+
+class HttpTransport(typing.Protocol):
+    """A minimal HTTP seam, so vendor adapters need no networking library to be testable."""
+
+    def post_json(self, url: str, payload: dict, *, timeout_s: float) -> dict: ...
 
 
 class ScaleCalibrationSource(typing.Protocol):

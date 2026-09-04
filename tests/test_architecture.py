@@ -90,3 +90,33 @@ class TestNoAccidentalGlobalState:
                     if isinstance(node.value, (ast.Dict, ast.List, ast.Set)):
                         offenders.append(f"{path.relative_to(SRC)}:{node.lineno} {t.id}")
         assert offenders == []
+
+
+class TestImportLinterContracts:
+    """The layered dependency graph, enforced by the tool rather than by review."""
+
+    def _run(self, config: str | None = None):
+        import subprocess
+        import sys
+
+        cmd = [str(pathlib.Path(sys.executable).parent / "lint-imports")]
+        if config:
+            cmd += ["--config", config]
+        return subprocess.run(cmd, capture_output=True, text=True, cwd=SRC.parents[1])
+
+    def test_every_contract_holds(self):
+        result = self._run()
+        assert result.returncode == 0, result.stdout + result.stderr
+
+    def test_the_check_actually_fails_on_a_violation(self, tmp_path):
+        """Guards the guard: a contract that cannot fail is not a check."""
+        bad = tmp_path / "bad.ini"
+        bad.write_text(
+            "[importlinter]\nroot_packages =\n    fitkit\n\n"
+            "[importlinter:contract:impossible]\n"
+            "name = Orchestration must not use the domain\n"
+            "type = forbidden\n"
+            "source_modules =\n    fitkit.orchestration\n"
+            "forbidden_modules =\n    fitkit.domain\n"
+        )
+        assert self._run(str(bad)).returncode != 0

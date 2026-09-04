@@ -1,0 +1,48 @@
+[importlinter]
+root_packages =
+    fitkit
+
+# The dependency graph from the design, checked rather than asserted.
+
+[importlinter:contract:layers]
+name = Domain core is the innermost layer, orchestration the outermost
+type = layers
+layers =
+    fitkit.orchestration
+    fitkit.evaluation
+    fitkit.fit_engine
+    fitkit.domain
+
+[importlinter:contract:subsystem-independence]
+name = Subsystems do not import each other
+type = independence
+modules =
+    fitkit.acquisition
+    fitkit.catalog
+    fitkit.explanation
+    fitkit.measurement
+
+[importlinter:contract:domain-is-a-kernel]
+name = The domain kernel depends on nothing in the project but itself
+type = forbidden
+source_modules =
+    fitkit.domain
+forbidden_modules =
+    fitkit.acquisition
+    fitkit.catalog
+    fitkit.evaluation
+    fitkit.explanation
+    fitkit.fit_engine
+    fitkit.measurement
+    fitkit.orchestration
+
+[importlinter:contract:explanation-cannot-reach-the-arithmetic]
+name = The explanation layer cannot reach the fit engine (C1)
+type = forbidden
+source_modules =
+    fitkit.explanation
+forbidden_modules =
+    fitkit.fit_engine
+    fitkit.measurement
+    fitkit.catalog
+    fitkit.acquisition
